@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MLB 승률 분석</title>
+  <title>해외스포츠 승률 분석</title>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10233f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -110,13 +110,17 @@
       line-height: 1.5;
     }
 
+    .sport-tabs,
     .view-tabs {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin: 20px 0 18px;
     }
 
+    .sport-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .view-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .sport-tab,
     .view-tab {
       min-height: 48px;
       border: 1px solid var(--line);
@@ -128,12 +132,14 @@
       cursor: pointer;
     }
 
+    .sport-tab[aria-pressed="true"],
     .view-tab[aria-pressed="true"] {
       border-color: var(--navy);
       background: var(--navy);
       color: #fff;
     }
 
+    .sport-hidden { display: none !important; }
     .view { display: none; }
     .view.active { display: block; }
 
@@ -504,7 +510,7 @@
 
       .topbar { display: block; }
       .updated { margin-top: 14px; }
-      .view-tabs, .summary { grid-template-columns: 1fr; }
+      .sport-tabs, .view-tabs, .summary { grid-template-columns: 1fr; }
       .toolbar { grid-template-columns: 1fr; }
       .cards, .game-grid, .notes { grid-template-columns: 1fr; }
       .section-title { display: block; }
@@ -537,23 +543,28 @@
       <div class="brand">
         <div class="mark" aria-hidden="true">MLB</div>
         <div>
-          <h1>MLB 승률 분석</h1>
-          <p class="subtitle">오늘 예측, 지난 결과, 앞으로 경기 일정을 한 화면에서 전환해 봅니다.</p>
+          <h1>해외스포츠 승률 분석</h1>
+          <p class="subtitle">해외야구와 해외축구 예측, 지난 결과, 앞으로 경기 일정을 전환해 봅니다.</p>
         </div>
       </div>
       <div class="updated">2026-07-09 KST 분석</div>
     </header>
 
-    <p class="notice">매일 오후 8시(KST)에 다음 경기 승률 예측이 업데이트됩니다. 지난 경기 결과와 적중률은 매일 오후 3시 30분(KST)에 반영됩니다.</p>
+    <p class="notice">MLB 예측은 매일 오후 8시(KST), 해외축구 예측은 매일 오후 6시(KST)에 업데이트됩니다. 지난 경기 결과는 MLB 오후 3시 30분, 해외축구 오전 8시 30분(KST)에 반영됩니다.</p>
     <p class="schedule-copy">분석 참고용이며 베팅 보장이 아닙니다. 선발 라인업, 부상자, 경기 직전 선발 투수 변경에 따라 신뢰도는 달라질 수 있습니다.</p>
 
-    <nav class="view-tabs" aria-label="MLB 분석 화면 선택">
+    <nav class="sport-tabs" aria-label="종목 선택">
+      <button class="sport-tab" type="button" data-sport="baseball" aria-pressed="true">해외야구 MLB</button>
+      <button class="sport-tab" type="button" data-sport="soccer" aria-pressed="false">해외축구</button>
+    </nav>
+
+    <nav class="view-tabs baseball-view" aria-label="MLB 분석 화면 선택">
       <button class="view-tab" type="button" data-view="today" aria-pressed="true">오늘 경기 승률 보기</button>
       <button class="view-tab" type="button" data-view="results" aria-pressed="false">지난 경기 결과 보기</button>
       <button class="view-tab" type="button" data-view="schedule" aria-pressed="false">경기 일정과 승률 보기</button>
     </nav>
 
-    <section class="view active" id="view-today">
+    <section class="view baseball-view active" id="view-today">
       <section class="summary" aria-label="오늘 요약">
         <div class="metric">
           <span>오늘 경기 수</span>
@@ -611,7 +622,7 @@
       <section class="notes" id="notes"></section>
     </section>
 
-    <section class="view" id="view-results">
+    <section class="view baseball-view" id="view-results">
       <section class="summary" aria-label="지난 경기 결과 요약">
         <div class="metric">
           <span>최종 경기</span>
@@ -642,7 +653,7 @@
       <section class="result-list" id="results"></section>
     </section>
 
-    <section class="view" id="view-schedule">
+    <section class="view baseball-view" id="view-schedule">
       <section class="summary" aria-label="앞으로 경기 일정 요약">
         <div class="metric">
           <span>예측 업데이트</span>
@@ -679,6 +690,55 @@
       <section id="standingsStatus" class="empty">MLB 시즌 승률표를 불러오는 중...</section>
       <section id="standings"></section>
     </section>
+
+    <section class="view" id="view-soccer">
+      <section class="summary" aria-label="해외축구 요약">
+        <div class="metric">
+          <span>축구 예측 업데이트</span>
+          <strong>18:00 KST</strong>
+          <small>유럽 주요 경기 전</small>
+        </div>
+        <div class="metric">
+          <span>축구 결과 반영</span>
+          <strong>08:30 KST</strong>
+          <small>새벽 경기 종료 후</small>
+        </div>
+        <div class="metric">
+          <span>예측 방식</span>
+          <strong>홈승/무/원정승</strong>
+          <small>승무패 기준</small>
+        </div>
+        <div class="metric">
+          <span>1차 지원 리그</span>
+          <strong>EPL · 라리가 · UCL</strong>
+          <small>이후 세리에A/분데스리가 확장</small>
+        </div>
+      </section>
+
+      <section class="section-title">
+        <h2>오늘 축구 승률 보기</h2>
+        <p>주요 해외축구 경기 승무패 예측</p>
+      </section>
+      <section class="cards" id="soccerTopPicks"></section>
+
+      <section class="section-title">
+        <h2>축구 일정과 승률 보기</h2>
+        <p>한국 시간 기준, 홈승/무/원정승</p>
+      </section>
+      <section class="game-grid" id="soccerFixtures"></section>
+
+      <section class="section-title">
+        <h2>지난 축구 결과 보기</h2>
+        <p>승무패 적중률과 주요 픽 결과</p>
+      </section>
+      <section class="result-list" id="soccerResults"></section>
+
+      <section class="section-title">
+        <h2>축구 주의 변수</h2>
+        <p>부상, 로테이션, 원정 거리, 일정 과밀</p>
+      </section>
+      <section class="notes" id="soccerNotes"></section>
+    </section>
   </main>
 
   <script>
@@ -714,6 +774,30 @@
       ["구장/날씨 변수", "필라델피아 @ 신시내티: Great American Ball Park, 91.8F, 환경계수 1.155로 장타와 득점 변동성이 큼."],
       ["불펜 변수", "밀워키 @ 세인트루이스: 세인트루이스 불펜 최근 3일 16.33이닝, 260구로 피로도가 크게 잡힘."],
       ["부상/라인업 변수", "양키스 핵심 타선 부상 공백, 미네소타 Bailey Ober·Byron Buxton·Ryan Jeffers 이슈 등은 경기 직전 재확인 필요."]
+    ];
+
+    const soccerTopPicks = [
+      { label: "홈승", className: "win", title: "EPL 주요 경기", detail: "정규 시즌 일정 확인 후 홈승/무/원정승 확률을 표시합니다." },
+      { label: "무", className: "one", title: "접전 후보", detail: "전력 차가 작거나 원정 부담이 큰 경기는 무승부 확률을 따로 강조합니다." },
+      { label: "원정승", className: "loss", title: "원정 우세 경기", detail: "강팀 원정, 부상 공백, 일정 과밀 변수를 같이 반영합니다." }
+    ];
+
+    const soccerFixtures = [
+      { league: "EPL", startKst: "시즌 일정 확인 중", homeKo: "프리미어리그 홈팀", awayKo: "프리미어리그 원정팀", pick: "홈승", homeProb: 44.0, drawProb: 28.0, awayProb: 28.0, score: "예상 스코어 준비 중", confidence: "예비", reason: "7월은 주요 유럽 리그 정규 시즌 전환기라 공식 일정 확정 후 경기별 수치를 채웁니다." },
+      { league: "라리가", startKst: "시즌 일정 확인 중", homeKo: "라리가 홈팀", awayKo: "라리가 원정팀", pick: "무", homeProb: 34.0, drawProb: 32.0, awayProb: 34.0, score: "예상 스코어 준비 중", confidence: "예비", reason: "리그 개막 후 홈/원정 전력, 부상, 로테이션 데이터를 반영합니다." },
+      { league: "챔피언스리그", startKst: "대진 확정 후", homeKo: "UCL 홈팀", awayKo: "UCL 원정팀", pick: "원정승", homeProb: 30.0, drawProb: 26.0, awayProb: 44.0, score: "예상 스코어 준비 중", confidence: "예비", reason: "유럽 대항전은 원정 거리와 일정 과밀 변수를 별도로 표시합니다." }
+    ];
+
+    const soccerResults = [
+      { date: "해외축구", title: "지난 경기 결과", body: "경기 종료 후 오전 8시 30분(KST)에 승무패 적중률을 반영합니다.", badge: "준비", className: "info" },
+      { date: "지표", title: "승무패 적중률", body: "홈승/무/원정승 기준으로 날짜별 결과를 누적합니다.", badge: "예정", className: "one" },
+      { date: "고급 지표", title: "오버/언더, 양팀득점", body: "1차 버전 안정화 후 별도 지표로 추가합니다.", badge: "다음", className: "win" }
+    ];
+
+    const soccerNotes = [
+      ["라인업 변수", "축구는 경기 약 60분 전 선발 명단이 공개되므로 최종 점검 기능을 나중에 붙이는 것이 좋습니다."],
+      ["리그 우선순위", "1차는 EPL, 라리가, 챔피언스리그 중심으로 시작하고 이후 세리에A, 분데스리가, 리그1을 확장합니다."],
+      ["예측 기준", "축구 기본 픽은 홈승/무/원정승입니다. 오버/언더 2.5골과 양팀득점은 고급 지표로 분리합니다."]
     ];
 
     const results = [
@@ -817,6 +901,53 @@
       `).join("");
     }
 
+    function renderSoccer() {
+      document.getElementById("soccerTopPicks").innerHTML = soccerTopPicks.map((item) => `
+        <article class="pick-card">
+          <span class="pill ${item.className}">${item.label}</span>
+          <h3>${item.title}</h3>
+          <p>${item.detail}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("soccerFixtures").innerHTML = soccerFixtures.map((game) => `
+        <article class="game-card">
+          <div class="game-head">
+            <div class="teams">
+              <span class="pill info">${game.league}</span>
+              <span class="pill info">${game.startKst}</span><br>
+              ${game.homeKo} vs ${game.awayKo}
+              <small>홈승/무/원정승 예측</small>
+            </div>
+            <span class="pill ${game.pick === "홈승" ? "win" : game.pick === "무" ? "one" : "loss"}">${game.pick}</span>
+          </div>
+          <div class="game-body">
+            <div class="datum"><span>홈승</span><strong class="prob">${game.homeProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>무승부</span><strong>${game.drawProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>원정승</span><strong>${game.awayProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>예상 스코어</span><strong>${game.score}</strong></div>
+            <div class="datum"><span>신뢰도</span><strong>${game.confidence}</strong></div>
+            <div class="datum"><span>근거</span><strong>${game.reason}</strong></div>
+          </div>
+        </article>
+      `).join("");
+
+      document.getElementById("soccerResults").innerHTML = soccerResults.map((item) => `
+        <article class="result-row">
+          <div>${item.date}</div>
+          <div>${item.title}<small>${item.body}</small></div>
+          <span class="pill ${item.className}">${item.badge}</span>
+        </article>
+      `).join("");
+
+      document.getElementById("soccerNotes").innerHTML = soccerNotes.map(([title, body]) => `
+        <article class="note-card">
+          <h3>${title}</h3>
+          <p>${body}</p>
+        </article>
+      `).join("");
+    }
+
     function renderResults() {
       document.getElementById("results").innerHTML = results.map((item) => `
         <article class="result-row">
@@ -897,10 +1028,22 @@
       }
     }
 
+    document.querySelectorAll(".sport-tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        const isBaseball = button.dataset.sport === "baseball";
+        document.querySelectorAll(".sport-tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
+        document.querySelectorAll(".baseball-view").forEach((item) => item.classList.toggle("sport-hidden", !isBaseball));
+        document.getElementById("view-soccer").classList.toggle("active", !isBaseball);
+        if (isBaseball && !document.querySelector(".baseball-view.view.active")) {
+          document.getElementById("view-today").classList.add("active");
+        }
+      });
+    });
+
     document.querySelectorAll(".view-tab").forEach((button) => {
       button.addEventListener("click", () => {
         document.querySelectorAll(".view-tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
-        document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === `view-${button.dataset.view}`));
+        document.querySelectorAll(".baseball-view.view").forEach((view) => view.classList.toggle("active", view.id === `view-${button.dataset.view}`));
       });
     });
 
@@ -920,7 +1063,7 @@
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", async () => {
         try {
-          const registration = await navigator.serviceWorker.register("./sw.js?v=5");
+          const registration = await navigator.serviceWorker.register("./sw.js?v=6");
           await registration.update();
         } catch (error) {
           console.warn("Service worker registration failed", error);
@@ -933,6 +1076,7 @@
     renderScheduleGames();
     renderStrongTeams();
     renderNotes();
+    renderSoccer();
     renderResults();
     loadStandings();
   </script>
