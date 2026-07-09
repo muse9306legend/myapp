@@ -1,4 +1,4 @@
-const CACHE_NAME = "myapp-sports-v6";
+const CACHE_NAME = "myapp-sports-v7";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
