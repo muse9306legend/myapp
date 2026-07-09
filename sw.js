@@ -1,4 +1,4 @@
-const CACHE_NAME = "myapp-v2";
+const CACHE_NAME = "myapp-mlb-v3";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -20,6 +20,13 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+
+  if (url.hostname === "statsapi.mlb.com") {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)

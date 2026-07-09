@@ -3,21 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>바로가기 앱</title>
+  <title>MLB 승률표</title>
   <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#0b1020" />
+  <meta name="theme-color" content="#10233f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #0b1020;
-      --panel: rgba(255, 255, 255, .07);
-      --panel-line: rgba(255, 255, 255, .14);
-      --text: #ffffff;
-      --muted: rgba(255, 255, 255, .72);
-      --button: #ffffff;
-      --button-text: #121826;
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --ink: #121826;
+      --muted: #657188;
+      --line: #d9e1ec;
+      --panel: #ffffff;
+      --navy: #10233f;
+      --red: #c72638;
+      --blue: #2563eb;
+      --green: #13825f;
+      --shadow: 0 14px 36px rgba(16, 35, 63, .12);
     }
 
     * {
@@ -29,151 +32,643 @@
       min-height: 100vh;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 20% 0%, rgba(55, 115, 255, .20), transparent 32rem),
-        linear-gradient(180deg, #09101f 0%, var(--bg) 100%);
-      color: var(--text);
+        linear-gradient(180deg, rgba(16, 35, 63, .96) 0, rgba(16, 35, 63, .96) 244px, transparent 244px),
+        var(--bg);
+      color: var(--ink);
     }
 
-    .wrap {
-      min-height: 100vh;
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 22px 16px 38px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      color: #fff;
+    }
+
+    .brand {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 24px;
+      gap: 12px;
+      min-width: 0;
     }
 
-    .panel {
-      width: min(520px, 100%);
-      padding: 24px;
-      border: 1px solid var(--panel-line);
-      border-radius: 18px;
-      background: var(--panel);
-      box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
-      backdrop-filter: blur(12px);
+    .mark {
+      display: grid;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 2px solid rgba(255, 255, 255, .52);
+      border-radius: 8px;
+      background: var(--red);
+      font-size: 22px;
+      font-weight: 900;
     }
 
     h1 {
-      margin: 0 0 10px;
-      font-size: 28px;
-      line-height: 1.2;
+      margin: 0;
+      font-size: clamp(25px, 5vw, 42px);
+      line-height: 1.08;
       letter-spacing: 0;
     }
 
-    p {
-      margin: 0 0 22px;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.55;
+    .subtitle {
+      margin: 6px 0 0;
+      color: rgba(255, 255, 255, .78);
+      font-size: 14px;
+      line-height: 1.45;
     }
 
-    .buttons {
-      display: grid;
-      gap: 12px;
-    }
-
-    .shortcut {
-      display: flex;
+    .refresh {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      width: 100%;
-      min-height: 58px;
-      padding: 14px 16px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--button);
-      color: var(--button-text);
-      font: inherit;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px solid rgba(255, 255, 255, .4);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .12);
+      color: #fff;
       font-weight: 800;
-      text-align: left;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .shortcut span {
-      display: block;
-      min-width: 0;
+    .refresh:disabled {
+      cursor: wait;
+      opacity: .65;
     }
 
-    .shortcut small {
-      display: block;
-      margin-top: 3px;
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .search {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid rgba(255, 255, 255, .32);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .95);
+      color: var(--ink);
+      padding: 0 14px;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, .22);
+    }
+
+    .tabs {
+      display: inline-grid;
+      grid-template-columns: repeat(3, minmax(68px, 1fr));
+      min-height: 46px;
       overflow: hidden;
-      color: rgba(18, 24, 38, .65);
-      font-size: 12px;
-      font-weight: 600;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, .34);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .1);
     }
 
-    .arrow {
-      flex: 0 0 auto;
-      font-size: 22px;
-      line-height: 1;
+    .tab {
+      border: 0;
+      border-right: 1px solid rgba(255, 255, 255, .22);
+      background: transparent;
+      color: rgba(255, 255, 255, .84);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .tab:last-child {
+      border-right: 0;
+    }
+
+    .tab[aria-pressed="true"] {
+      background: #fff;
+      color: var(--navy);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 20px 0 18px;
+    }
+
+    .metric {
+      min-height: 92px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 1.05;
     }
 
     .status {
-      min-height: 20px;
-      margin-top: 16px;
+      min-height: 22px;
+      margin: 0 0 12px;
       color: var(--muted);
       font-size: 13px;
+      font-weight: 700;
+    }
+
+    .standings {
+      display: grid;
+      gap: 18px;
+    }
+
+    .division {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .division-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .division-head h2 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .division-head span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      height: 48px;
+      padding: 0 12px;
+      border-bottom: 1px solid #edf1f6;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    td {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .rank,
+    .team {
+      text-align: left;
+    }
+
+    .rank {
+      width: 54px;
+      color: var(--muted);
+    }
+
+    .team-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 220px;
+    }
+
+    .abbr {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .team-names {
+      min-width: 0;
+    }
+
+    .team-ko {
+      display: block;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.15;
+    }
+
+    .team-en {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .pct {
+      color: var(--green);
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .empty,
+    .error {
+      padding: 28px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .error {
+      color: #9f1239;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        background:
+          linear-gradient(180deg, rgba(16, 35, 63, .97) 0, rgba(16, 35, 63, .97) 312px, transparent 312px),
+          var(--bg);
+      }
+
+      .app {
+        padding-inline: 12px;
+      }
+
+      .topbar {
+        display: block;
+      }
+
+      .refresh {
+        width: 100%;
+        margin-top: 16px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+        margin-top: 18px;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric {
+        min-height: 84px;
+        padding: 13px;
+      }
+
+      .metric strong {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="panel" aria-label="바로가기">
-      <h1>바로가기 앱</h1>
-      <p>원하는 주소를 바로 열 수 있게 버튼을 눌러 이동하세요.</p>
-
-      <div class="buttons">
-        <button class="shortcut" type="button" data-url="http://egluxnine.iptime.org:10082/">
-          <span>
-            Egluxnine 서버
-            <small>http://egluxnine.iptime.org:10082/</small>
-          </span>
-          <span class="arrow" aria-hidden="true">›</span>
-        </button>
-
-        <button class="shortcut" type="button" data-url="https://muse9306legend.github.io/myapp/index.html">
-          <span>
-            MyApp 웹페이지
-            <small>https://muse9306legend.github.io/myapp/index.html</small>
-          </span>
-          <span class="arrow" aria-hidden="true">›</span>
-        </button>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">MLB</div>
+        <div>
+          <h1>MLB 승률표</h1>
+          <p class="subtitle">실시간 순위를 불러와 팀 이름을 한글로 보여줍니다.</p>
+        </div>
       </div>
+      <button class="refresh" id="refresh" type="button">새로고침</button>
+    </header>
 
-      <div class="status" id="status">상태: 준비됨</div>
+    <section class="controls" aria-label="순위표 필터">
+      <input class="search" id="search" type="search" placeholder="팀명 검색: 다저스, 양키스, LAD..." autocomplete="off" />
+      <div class="tabs" role="group" aria-label="리그 선택">
+        <button class="tab" type="button" data-league="all" aria-pressed="true">전체</button>
+        <button class="tab" type="button" data-league="AL" aria-pressed="false">아메리칸</button>
+        <button class="tab" type="button" data-league="NL" aria-pressed="false">내셔널</button>
+      </div>
     </section>
+
+    <section class="summary" aria-label="요약">
+      <div class="metric">
+        <span>최고 승률</span>
+        <strong id="bestPct">-</strong>
+      </div>
+      <div class="metric">
+        <span>최다 승</span>
+        <strong id="bestWins">-</strong>
+      </div>
+      <div class="metric">
+        <span>총 팀 수</span>
+        <strong id="teamCount">-</strong>
+      </div>
+      <div class="metric">
+        <span>기준 시즌</span>
+        <strong id="season">-</strong>
+      </div>
+    </section>
+
+    <p class="status" id="status">MLB 순위를 불러오는 중...</p>
+    <section class="standings" id="standings" aria-live="polite"></section>
   </main>
 
   <script>
-    const status = document.getElementById("status");
+    const TEAM_KO = {
+      108: "LA 에인절스",
+      109: "애리조나 다이아몬드백스",
+      110: "볼티모어 오리올스",
+      111: "보스턴 레드삭스",
+      112: "시카고 컵스",
+      113: "신시내티 레즈",
+      114: "클리블랜드 가디언스",
+      115: "콜로라도 로키스",
+      116: "디트로이트 타이거스",
+      117: "휴스턴 애스트로스",
+      118: "캔자스시티 로열스",
+      119: "LA 다저스",
+      120: "워싱턴 내셔널스",
+      121: "뉴욕 메츠",
+      133: "오클랜드 애슬레틱스",
+      134: "피츠버그 파이리츠",
+      135: "샌디에이고 파드리스",
+      136: "시애틀 매리너스",
+      137: "샌프란시스코 자이언츠",
+      138: "세인트루이스 카디널스",
+      139: "탬파베이 레이스",
+      140: "텍사스 레인저스",
+      141: "토론토 블루제이스",
+      142: "미네소타 트윈스",
+      143: "필라델피아 필리스",
+      144: "애틀랜타 브레이브스",
+      145: "시카고 화이트삭스",
+      146: "마이애미 말린스",
+      147: "뉴욕 양키스",
+      158: "밀워키 브루어스"
+    };
 
-    function openShortcut(url) {
-      status.textContent = "상태: 이동 중...";
-      const opened = window.open(url, "_blank", "noopener,noreferrer");
+    const LEAGUE_KO = {
+      103: "아메리칸 리그",
+      104: "내셔널 리그"
+    };
 
-      if (!opened) {
-        window.location.href = url;
+    const DIVISION_KO = {
+      200: "서부지구",
+      201: "동부지구",
+      202: "중부지구",
+      203: "서부지구",
+      204: "동부지구",
+      205: "중부지구"
+    };
+
+    const state = {
+      records: [],
+      league: "all",
+      query: "",
+      season: new Date().getFullYear()
+    };
+
+    const standingsEl = document.getElementById("standings");
+    const statusEl = document.getElementById("status");
+    const refreshEl = document.getElementById("refresh");
+    const searchEl = document.getElementById("search");
+    const bestPctEl = document.getElementById("bestPct");
+    const bestWinsEl = document.getElementById("bestWins");
+    const teamCountEl = document.getElementById("teamCount");
+    const seasonEl = document.getElementById("season");
+
+    function pctText(value) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return "-";
+      return `${(number * 100).toFixed(1)}%`;
+    }
+
+    function normalize(text) {
+      return String(text || "").toLowerCase().replace(/\s+/g, "");
+    }
+
+    function mapRecord(record) {
+      const teams = record.teamRecords.map((teamRecord) => {
+        const team = teamRecord.team;
+        const leagueId = record.league.id;
+        return {
+          id: team.id,
+          rank: Number(teamRecord.divisionRank || teamRecord.leagueRank || 0),
+          leagueId,
+          leagueCode: leagueId === 103 ? "AL" : "NL",
+          leagueName: LEAGUE_KO[leagueId] || record.league.name,
+          divisionId: record.division.id,
+          divisionName: `${LEAGUE_KO[leagueId] || record.league.name} ${DIVISION_KO[record.division.id] || record.division.name}`,
+          nameKo: TEAM_KO[team.id] || team.name,
+          nameEn: team.name,
+          abbr: team.abbreviation || team.teamName.slice(0, 3).toUpperCase(),
+          wins: Number(teamRecord.wins),
+          losses: Number(teamRecord.losses),
+          pct: Number(teamRecord.winningPercentage),
+          gamesBack: teamRecord.gamesBack,
+          streak: teamRecord.streak?.streakCode || "-",
+          lastTen: teamRecord.records?.splitRecords?.find((item) => item.type === "lastTen")
+        };
+      });
+
+      return {
+        id: record.division.id,
+        leagueId: record.league.id,
+        leagueCode: record.league.id === 103 ? "AL" : "NL",
+        name: `${LEAGUE_KO[record.league.id] || record.league.name} ${DIVISION_KO[record.division.id] || record.division.name}`,
+        teams: teams.sort((a, b) => b.pct - a.pct || b.wins - a.wins)
+      };
+    }
+
+    function updateSummary(teams) {
+      const bestPct = teams.reduce((best, team) => team.pct > (best?.pct ?? -1) ? team : best, null);
+      const bestWins = teams.reduce((best, team) => team.wins > (best?.wins ?? -1) ? team : best, null);
+
+      bestPctEl.textContent = bestPct ? `${bestPct.nameKo} ${pctText(bestPct.pct)}` : "-";
+      bestWinsEl.textContent = bestWins ? `${bestWins.nameKo} ${bestWins.wins}승` : "-";
+      teamCountEl.textContent = `${teams.length}팀`;
+      seasonEl.textContent = `${state.season}`;
+    }
+
+    function render() {
+      const query = normalize(state.query);
+      const filteredDivisions = state.records
+        .filter((division) => state.league === "all" || division.leagueCode === state.league)
+        .map((division) => ({
+          ...division,
+          teams: division.teams.filter((team) => {
+            const haystack = normalize(`${team.nameKo} ${team.nameEn} ${team.abbr}`);
+            return !query || haystack.includes(query);
+          })
+        }))
+        .filter((division) => division.teams.length > 0);
+
+      const visibleTeams = filteredDivisions.flatMap((division) => division.teams);
+      updateSummary(visibleTeams);
+
+      if (!visibleTeams.length) {
+        standingsEl.innerHTML = `<div class="empty">검색 결과가 없습니다.</div>`;
+        statusEl.textContent = "조건에 맞는 팀이 없습니다.";
+        return;
+      }
+
+      statusEl.textContent = `${new Date().toLocaleString("ko-KR")} 기준으로 ${visibleTeams.length}개 팀을 표시 중입니다.`;
+
+      standingsEl.innerHTML = filteredDivisions.map((division) => `
+        <section class="division">
+          <div class="division-head">
+            <h2>${division.name}</h2>
+            <span>${division.teams.length}팀</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank">순위</th>
+                  <th class="team">팀</th>
+                  <th>승</th>
+                  <th>패</th>
+                  <th>승률</th>
+                  <th>게임차</th>
+                  <th>최근 10경기</th>
+                  <th>연속</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${division.teams.map((team, index) => `
+                  <tr>
+                    <td class="rank">${index + 1}</td>
+                    <td class="team">
+                      <div class="team-cell">
+                        <span class="abbr">${team.abbr}</span>
+                        <span class="team-names">
+                          <span class="team-ko">${team.nameKo}</span>
+                          <span class="team-en">${team.nameEn}</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td>${team.wins}</td>
+                    <td>${team.losses}</td>
+                    <td class="pct">${pctText(team.pct)}</td>
+                    <td>${team.gamesBack}</td>
+                    <td>${team.lastTen ? `${team.lastTen.wins}승 ${team.lastTen.losses}패` : "-"}</td>
+                    <td>${team.streak}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `).join("");
+    }
+
+    async function loadStandings() {
+      refreshEl.disabled = true;
+      statusEl.textContent = "MLB 순위를 불러오는 중...";
+      standingsEl.innerHTML = "";
+
+      try {
+        const season = new Date().getFullYear();
+        const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${season}&standingsTypes=regularSeason`;
+        const response = await fetch(url, { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error(`MLB API 오류: ${response.status}`);
+        }
+
+        const data = await response.json();
+        state.season = season;
+        state.records = data.records.map(mapRecord);
+        render();
+      } catch (error) {
+        console.error(error);
+        standingsEl.innerHTML = `<div class="error">순위를 불러오지 못했습니다. 잠시 후 새로고침을 눌러 주세요.</div>`;
+        statusEl.textContent = "MLB 데이터 연결 실패";
+        updateSummary([]);
+      } finally {
+        refreshEl.disabled = false;
       }
     }
 
-    document.querySelectorAll("[data-url]").forEach((button) => {
-      button.addEventListener("click", () => openShortcut(button.dataset.url));
+    refreshEl.addEventListener("click", loadStandings);
+
+    searchEl.addEventListener("input", (event) => {
+      state.query = event.target.value;
+      render();
+    });
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.league = button.dataset.league;
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.setAttribute("aria-pressed", String(tab === button));
+        });
+        render();
+      });
     });
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", async () => {
         try {
-          const registration = await navigator.serviceWorker.register("./sw.js?v=2");
+          const registration = await navigator.serviceWorker.register("./sw.js?v=3");
           await registration.update();
         } catch (error) {
           console.warn("Service worker registration failed", error);
         }
       });
     }
+
+    loadStandings();
   </script>
 </body>
 </html>
