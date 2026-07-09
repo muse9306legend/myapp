@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MLB 승률표</title>
+  <title>MLB 승률 분석</title>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10233f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,41 +11,37 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #f4f7fb;
+      --bg: #f3f6fb;
       --ink: #121826;
-      --muted: #657188;
-      --line: #d9e1ec;
+      --muted: #667085;
+      --line: #d9e2ee;
       --panel: #ffffff;
       --navy: #10233f;
       --red: #c72638;
       --blue: #2563eb;
-      --green: #13825f;
-      --shadow: 0 14px 36px rgba(16, 35, 63, .12);
+      --green: #11845b;
+      --amber: #b7791f;
+      --shadow: 0 14px 34px rgba(16, 35, 63, .12);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       min-height: 100vh;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        linear-gradient(180deg, rgba(16, 35, 63, .96) 0, rgba(16, 35, 63, .96) 244px, transparent 244px),
+        linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 310px, transparent 310px),
         var(--bg);
       color: var(--ink);
     }
 
-    button,
-    input {
-      font: inherit;
-    }
+    button, input { font: inherit; }
 
     .app {
-      width: min(1120px, 100%);
+      width: min(1180px, 100%);
       margin: 0 auto;
-      padding: 22px 16px 38px;
+      padding: 22px 16px 42px;
     }
 
     .topbar {
@@ -65,111 +61,64 @@
 
     .mark {
       display: grid;
-      flex: 0 0 44px;
-      width: 44px;
-      height: 44px;
+      flex: 0 0 48px;
+      width: 48px;
+      height: 48px;
       place-items: center;
-      border: 2px solid rgba(255, 255, 255, .52);
+      border: 2px solid rgba(255, 255, 255, .55);
       border-radius: 8px;
       background: var(--red);
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 900;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(25px, 5vw, 42px);
+      font-size: clamp(27px, 5vw, 44px);
       line-height: 1.08;
       letter-spacing: 0;
     }
 
     .subtitle {
-      margin: 6px 0 0;
+      margin: 7px 0 0;
       color: rgba(255, 255, 255, .78);
       font-size: 14px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
-    .refresh {
+    .updated {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      padding: 0 15px;
-      border: 1px solid rgba(255, 255, 255, .4);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, .12);
-      color: #fff;
-      font-weight: 800;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .refresh:disabled {
-      cursor: wait;
-      opacity: .65;
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      margin-top: 28px;
-    }
-
-    .search {
-      width: 100%;
-      min-height: 46px;
-      border: 1px solid rgba(255, 255, 255, .32);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, .95);
-      color: var(--ink);
-      padding: 0 14px;
-      outline: none;
-    }
-
-    .search:focus {
-      border-color: #fff;
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, .22);
-    }
-
-    .tabs {
-      display: inline-grid;
-      grid-template-columns: repeat(3, minmax(68px, 1fr));
-      min-height: 46px;
-      overflow: hidden;
+      min-height: 38px;
+      padding: 0 12px;
       border: 1px solid rgba(255, 255, 255, .34);
       border-radius: 8px;
-      background: rgba(255, 255, 255, .1);
-    }
-
-    .tab {
-      border: 0;
-      border-right: 1px solid rgba(255, 255, 255, .22);
-      background: transparent;
-      color: rgba(255, 255, 255, .84);
+      color: rgba(255, 255, 255, .86);
+      font-size: 13px;
       font-weight: 800;
-      cursor: pointer;
+      white-space: nowrap;
     }
 
-    .tab:last-child {
-      border-right: 0;
-    }
-
-    .tab[aria-pressed="true"] {
-      background: #fff;
-      color: var(--navy);
+    .notice {
+      margin: 20px 0 0;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, .28);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .1);
+      color: rgba(255, 255, 255, .86);
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     .summary {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
-      margin: 20px 0 18px;
+      margin: 22px 0 18px;
     }
 
     .metric {
-      min-height: 92px;
+      min-height: 98px;
       padding: 16px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -181,38 +130,231 @@
       display: block;
       color: var(--muted);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .metric strong {
       display: block;
       margin-top: 8px;
-      font-size: 24px;
-      line-height: 1.05;
+      font-size: 23px;
+      line-height: 1.12;
     }
 
-    .status {
-      min-height: 22px;
-      margin: 0 0 12px;
+    .metric small {
+      display: block;
+      margin-top: 4px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
     }
 
-    .standings {
+    .toolbar {
       display: grid;
-      gap: 18px;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin: 10px 0 18px;
     }
 
-    .division {
+    .search {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 14px;
+      outline: none;
+      box-shadow: 0 8px 18px rgba(16, 35, 63, .07);
+    }
+
+    .search:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .14);
+    }
+
+    .tabs {
+      display: inline-grid;
+      grid-template-columns: repeat(4, minmax(62px, 1fr));
+      min-height: 46px;
       overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(16, 35, 63, .07);
+    }
+
+    .tab {
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .tab:last-child { border-right: 0; }
+
+    .tab[aria-pressed="true"] {
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 26px 0 12px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .section-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pick-card, .game-card, .note-card, .standings-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
       box-shadow: var(--shadow);
     }
 
-    .division-head {
+    .pick-card {
+      min-height: 142px;
+      padding: 16px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 28px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: #e8eef8;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .pill.win { background: #dff5ed; color: var(--green); }
+    .pill.one { background: #fff2d8; color: var(--amber); }
+    .pill.loss { background: #ffe5e9; color: #b42334; }
+
+    .pick-card h3 {
+      margin: 12px 0 8px;
+      font-size: 18px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .pick-card p, .note-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 700;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .game-card {
+      overflow: hidden;
+    }
+
+    .game-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 13px 14px;
+      border-bottom: 1px solid #edf1f6;
+      background: #f8fafc;
+    }
+
+    .teams {
+      min-width: 0;
+      font-weight: 950;
+      line-height: 1.35;
+    }
+
+    .teams small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .game-body {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .datum span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .datum strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .prob {
+      color: var(--green);
+      font-size: 18px;
+      font-weight: 950;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .note-card {
+      padding: 15px;
+    }
+
+    .note-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .standings-card {
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .standings-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -222,21 +364,18 @@
       background: #f8fafc;
     }
 
-    .division-head h2 {
+    .standings-head h3 {
       margin: 0;
       font-size: 17px;
-      letter-spacing: 0;
     }
 
-    .division-head span {
+    .standings-head span {
       color: var(--muted);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
-    .table-wrap {
-      overflow-x: auto;
-    }
+    .table-wrap { overflow-x: auto; }
 
     table {
       width: 100%;
@@ -244,8 +383,7 @@
       border-collapse: collapse;
     }
 
-    th,
-    td {
+    th, td {
       height: 48px;
       padding: 0 12px;
       border-bottom: 1px solid #edf1f6;
@@ -253,27 +391,22 @@
       white-space: nowrap;
     }
 
-    tr:last-child td {
-      border-bottom: 0;
-    }
+    tr:last-child td { border-bottom: 0; }
 
     th {
       color: var(--muted);
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     td {
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 750;
     }
 
-    .rank,
-    .team {
-      text-align: left;
-    }
+    .team-col, .rank-col { text-align: left; }
 
-    .rank {
+    .rank-col {
       width: 54px;
       color: var(--muted);
     }
@@ -289,17 +422,13 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
+      width: 38px;
       height: 28px;
       border-radius: 6px;
       background: var(--navy);
       color: #fff;
       font-size: 12px;
-      font-weight: 900;
-    }
-
-    .team-names {
-      min-width: 0;
+      font-weight: 950;
     }
 
     .team-ko {
@@ -317,15 +446,8 @@
       font-weight: 650;
     }
 
-    .pct {
-      color: var(--green);
-      font-size: 17px;
-      font-weight: 900;
-    }
-
-    .empty,
-    .error {
-      padding: 28px 16px;
+    .empty, .error {
+      padding: 24px 16px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
@@ -334,47 +456,40 @@
       box-shadow: var(--shadow);
     }
 
-    .error {
-      color: #9f1239;
-    }
+    .error { color: #b42334; }
 
-    @media (max-width: 760px) {
+    @media (max-width: 860px) {
       body {
         background:
-          linear-gradient(180deg, rgba(16, 35, 63, .97) 0, rgba(16, 35, 63, .97) 312px, transparent 312px),
+          linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 410px, transparent 410px),
           var(--bg);
       }
 
-      .app {
-        padding-inline: 12px;
-      }
+      .topbar { display: block; }
+      .updated { margin-top: 14px; }
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .toolbar { grid-template-columns: 1fr; }
+      .cards, .game-grid, .notes { grid-template-columns: 1fr; }
+      .section-title { display: block; }
+      .section-title p { margin-top: 5px; text-align: left; }
+      .game-body { grid-template-columns: 1fr 1fr; }
+    }
 
-      .topbar {
-        display: block;
+    @media (max-width: 520px) {
+      .app { padding-inline: 12px; }
+      .brand { align-items: flex-start; }
+      .mark {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+        font-size: 17px;
       }
-
-      .refresh {
-        width: 100%;
-        margin-top: 16px;
-      }
-
-      .controls {
-        grid-template-columns: 1fr;
-        margin-top: 18px;
-      }
-
-      .summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .metric {
-        min-height: 84px;
-        padding: 13px;
-      }
-
-      .metric strong {
-        font-size: 20px;
-      }
+      .metric { padding: 13px; min-height: 88px; }
+      .metric strong { font-size: 19px; }
+      .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tab { min-height: 42px; border-bottom: 1px solid var(--line); }
+      .tab:nth-child(2) { border-right: 0; }
+      .tab:nth-child(3), .tab:nth-child(4) { border-bottom: 0; }
     }
   </style>
 </head>
@@ -384,108 +499,237 @@
       <div class="brand">
         <div class="mark" aria-hidden="true">MLB</div>
         <div>
-          <h1>MLB 승률표</h1>
-          <p class="subtitle">실시간 순위를 불러와 팀 이름을 한글로 보여줍니다.</p>
+          <h1>MLB 승률 분석</h1>
+          <p class="subtitle">Teruha가 매일 정리하는 경기별 승/1/패 픽과 승률 흐름을 한눈에 봅니다.</p>
         </div>
       </div>
-      <button class="refresh" id="refresh" type="button">새로고침</button>
+      <div class="updated">2026-07-09 KST 분석</div>
     </header>
 
-    <section class="controls" aria-label="순위표 필터">
-      <input class="search" id="search" type="search" placeholder="팀명 검색: 다저스, 양키스, LAD..." autocomplete="off" />
-      <div class="tabs" role="group" aria-label="리그 선택">
-        <button class="tab" type="button" data-league="all" aria-pressed="true">전체</button>
-        <button class="tab" type="button" data-league="AL" aria-pressed="false">아메리칸</button>
-        <button class="tab" type="button" data-league="NL" aria-pressed="false">내셔널</button>
+    <p class="notice">분석 참고용이며 베팅 보장이 아닙니다. 선발 라인업, 부상자, 경기 직전 선발 투수 변경에 따라 신뢰도는 달라질 수 있습니다.</p>
+
+    <section class="summary" aria-label="오늘 요약">
+      <div class="metric">
+        <span>오늘 경기 수</span>
+        <strong id="gameCount">13경기</strong>
+        <small>홈팀 기준 승/1/패</small>
+      </div>
+      <div class="metric">
+        <span>최고 홈 승 픽</span>
+        <strong>디트로이트</strong>
+        <small>홈 승 79.9%</small>
+      </div>
+      <div class="metric">
+        <span>최고 1 픽</span>
+        <strong>클리블랜드 @ 미네소타</strong>
+        <small>1점차 이내 37.6%</small>
+      </div>
+      <div class="metric">
+        <span>최고 패 픽</span>
+        <strong>필라델피아 @ 신시내티</strong>
+        <small>홈 2점차 이상 패 61.3%</small>
       </div>
     </section>
 
-    <section class="summary" aria-label="요약">
-      <div class="metric">
-        <span>최고 승률</span>
-        <strong id="bestPct">-</strong>
-      </div>
-      <div class="metric">
-        <span>최다 승</span>
-        <strong id="bestWins">-</strong>
-      </div>
-      <div class="metric">
-        <span>총 팀 수</span>
-        <strong id="teamCount">-</strong>
-      </div>
-      <div class="metric">
-        <span>기준 시즌</span>
-        <strong id="season">-</strong>
+    <section class="section-title">
+      <h2>가장 확률 높은 승/1/패 픽</h2>
+      <p>홈팀 기준: 승 = 홈 2점차 이상 승, 1 = 1점차 이내, 패 = 홈 2점차 이상 패</p>
+    </section>
+
+    <section class="cards" id="topPicks"></section>
+
+    <section class="section-title">
+      <h2>오늘 경기 전체 픽</h2>
+      <p>팀명 검색과 픽 필터로 빠르게 확인</p>
+    </section>
+
+    <section class="toolbar" aria-label="경기 필터">
+      <input class="search" id="search" type="search" placeholder="팀명 검색: 양키스, 디트로이트, Phillies..." autocomplete="off" />
+      <div class="tabs" role="group" aria-label="픽 선택">
+        <button class="tab" type="button" data-pick="all" aria-pressed="true">전체</button>
+        <button class="tab" type="button" data-pick="승" aria-pressed="false">승</button>
+        <button class="tab" type="button" data-pick="1" aria-pressed="false">1</button>
+        <button class="tab" type="button" data-pick="패" aria-pressed="false">패</button>
       </div>
     </section>
 
-    <p class="status" id="status">MLB 순위를 불러오는 중...</p>
-    <section class="standings" id="standings" aria-live="polite"></section>
+    <section class="game-grid" id="games" aria-live="polite"></section>
+
+    <section class="section-title">
+      <h2>승률 62% 이상 팀</h2>
+      <p>일반 승리확률 기준</p>
+    </section>
+    <section class="cards" id="strongTeams"></section>
+
+    <section class="section-title">
+      <h2>주의해서 볼 경기</h2>
+      <p>구장, 날씨, 불펜, 부상 변수</p>
+    </section>
+    <section class="notes" id="notes"></section>
+
+    <section class="section-title">
+      <h2>실시간 시즌 승률표</h2>
+      <p>MLB 공식 Stats API 기준, 팀명 한글 표시</p>
+    </section>
+    <section id="standingsStatus" class="empty">MLB 시즌 승률표를 불러오는 중...</section>
+    <section id="standings"></section>
   </main>
 
   <script>
-    const TEAM_KO = {
-      108: "LA 에인절스",
-      109: "애리조나 다이아몬드백스",
-      110: "볼티모어 오리올스",
-      111: "보스턴 레드삭스",
-      112: "시카고 컵스",
-      113: "신시내티 레즈",
-      114: "클리블랜드 가디언스",
-      115: "콜로라도 로키스",
-      116: "디트로이트 타이거스",
-      117: "휴스턴 애스트로스",
-      118: "캔자스시티 로열스",
-      119: "LA 다저스",
-      120: "워싱턴 내셔널스",
-      121: "뉴욕 메츠",
-      133: "오클랜드 애슬레틱스",
-      134: "피츠버그 파이리츠",
-      135: "샌디에이고 파드리스",
-      136: "시애틀 매리너스",
-      137: "샌프란시스코 자이언츠",
-      138: "세인트루이스 카디널스",
-      139: "탬파베이 레이스",
-      140: "텍사스 레인저스",
-      141: "토론토 블루제이스",
-      142: "미네소타 트윈스",
-      143: "필라델피아 필리스",
-      144: "애틀랜타 브레이브스",
-      145: "시카고 화이트삭스",
-      146: "마이애미 말린스",
-      147: "뉴욕 양키스",
-      158: "밀워키 브루어스"
+    const analysisDate = "2026-07-09";
+
+    const games = [
+      { awayKo: "애틀랜타 브레이브스", awayEn: "Atlanta Braves", homeKo: "피츠버그 파이리츠", homeEn: "Pittsburgh Pirates", pick: "패", pickProb: 38.2, favoriteKo: "애틀랜타", winProb: 55.8, score: "애틀랜타 7 - 6 피츠버그", confidence: "낮음", reason: "선발 ERA 우위, 실점 억제력 우위" },
+      { awayKo: "캔자스시티 로열스", awayEn: "Kansas City Royals", homeKo: "뉴욕 메츠", homeEn: "New York Mets", pick: "패", pickProb: 48.9, favoriteKo: "캔자스시티", winProb: 66.2, score: "캔자스시티 6 - 5 뉴욕 메츠", confidence: "높음", reason: "선발 ERA 우위, 상대 불펜 피로" },
+      { awayKo: "뉴욕 양키스", awayEn: "New York Yankees", homeKo: "탬파베이 레이스", homeEn: "Tampa Bay Rays", pick: "승", pickProb: 50.2, favoriteKo: "탬파베이", winProb: 72.0, score: "뉴욕 양키스 3 - 4 탬파베이", confidence: "높음", reason: "홈 이점, 최근 타선 흐름" },
+      { awayKo: "클리블랜드 가디언스", awayEn: "Cleveland Guardians", homeKo: "미네소타 트윈스", homeEn: "Minnesota Twins", pick: "1", pickProb: 37.6, favoriteKo: "클리블랜드", winProb: 50.0, score: "클리블랜드 6 - 5 미네소타", confidence: "낮음", reason: "양 팀 승률 균형, 접전 가능성" },
+      { awayKo: "보스턴 레드삭스", awayEn: "Boston Red Sox", homeKo: "시카고 화이트삭스", homeEn: "Chicago White Sox", pick: "패", pickProb: 43.7, favoriteKo: "보스턴", winProb: 63.4, score: "보스턴 5 - 4 시카고 화이트삭스", confidence: "높음", reason: "최근 타선 우위, 실점 억제력 우위" },
+      { awayKo: "시카고 컵스", awayEn: "Chicago Cubs", homeKo: "볼티모어 오리올스", homeEn: "Baltimore Orioles", pick: "패", pickProb: 49.1, favoriteKo: "시카고 컵스", winProb: 66.0, score: "시카고 컵스 7 - 5 볼티모어", confidence: "높음", reason: "득점력, 최근 타선, 실점 억제력 우위" },
+      { awayKo: "애슬레틱스", awayEn: "Athletics", homeKo: "디트로이트 타이거스", homeEn: "Detroit Tigers", pick: "승", pickProb: 79.9, favoriteKo: "디트로이트", winProb: 88.5, score: "애슬레틱스 4 - 8 디트로이트", confidence: "높음", reason: "홈 이점, 최근 타선, 선발 ERA 우위" },
+      { awayKo: "시애틀 매리너스", awayEn: "Seattle Mariners", homeKo: "마이애미 말린스", homeEn: "Miami Marlins", pick: "패", pickProb: 44.7, favoriteKo: "시애틀", winProb: 65.9, score: "시애틀 4 - 3 마이애미", confidence: "높음", reason: "선발 ERA 우위, 실점 억제력 우위" },
+      { awayKo: "필라델피아 필리스", awayEn: "Philadelphia Phillies", homeKo: "신시내티 레즈", homeEn: "Cincinnati Reds", pick: "패", pickProb: 61.3, favoriteKo: "필라델피아", winProb: 77.5, score: "필라델피아 6 - 4 신시내티", confidence: "높음", reason: "득점력, 최근 타선, 선발 ERA 우위" },
+      { awayKo: "밀워키 브루어스", awayEn: "Milwaukee Brewers", homeKo: "세인트루이스 카디널스", homeEn: "St. Louis Cardinals", pick: "패", pickProb: 52.2, favoriteKo: "밀워키", winProb: 72.0, score: "밀워키 5 - 3 세인트루이스", confidence: "높음", reason: "득점력, 선발 ERA 우위, 상대 불펜 피로" },
+      { awayKo: "LA 에인절스", awayEn: "Los Angeles Angels", homeKo: "텍사스 레인저스", homeEn: "Texas Rangers", pick: "승", pickProb: 58.5, favoriteKo: "텍사스", winProb: 77.1, score: "LA 에인절스 3 - 5 텍사스", confidence: "높음", reason: "홈 이점, 최근 타선, 실점 억제력 우위" },
+      { awayKo: "애리조나 다이아몬드백스", awayEn: "Arizona Diamondbacks", homeKo: "샌디에이고 파드리스", homeEn: "San Diego Padres", pick: "패", pickProb: 41.2, favoriteKo: "애리조나", winProb: 60.8, score: "애리조나 5 - 4 샌디에이고", confidence: "보통", reason: "득점력, 최근 타선, 선발 ERA 우위" },
+      { awayKo: "콜로라도 로키스", awayEn: "Colorado Rockies", homeKo: "샌프란시스코 자이언츠", homeEn: "San Francisco Giants", pick: "패", pickProb: 41.5, favoriteKo: "콜로라도", winProb: 59.0, score: "콜로라도 7 - 6 샌프란시스코", confidence: "보통", reason: "득점력과 최근 타선 우위" }
+    ];
+
+    const strongTeams = [
+      ["디트로이트 타이거스", 88.5],
+      ["필라델피아 필리스", 77.5],
+      ["텍사스 레인저스", 77.1],
+      ["탬파베이 레이스", 72.0],
+      ["밀워키 브루어스", 72.0],
+      ["캔자스시티 로열스", 66.2],
+      ["시카고 컵스", 66.0],
+      ["시애틀 매리너스", 65.9],
+      ["보스턴 레드삭스", 63.4]
+    ];
+
+    const notes = [
+      ["구장/날씨 변수", "필라델피아 @ 신시내티: Great American Ball Park, 91.8F, 환경계수 1.155로 장타와 득점 변동성이 큼."],
+      ["불펜 변수", "밀워키 @ 세인트루이스: 세인트루이스 불펜 최근 3일 16.33이닝, 260구로 피로도가 크게 잡힘."],
+      ["부상/라인업 변수", "양키스 핵심 타선 부상 공백, 미네소타 Bailey Ober·Byron Buxton·Ryan Jeffers 이슈 등은 경기 직전 재확인 필요."]
+    ];
+
+    const topPicks = [
+      { label: "승", className: "win", title: "애슬레틱스 @ 디트로이트", detail: "홈 승 79.9% · 일반 승리확률 디트로이트 88.5%" },
+      { label: "1", className: "one", title: "클리블랜드 @ 미네소타", detail: "1점차 이내 37.6% · 균형 경기라 접전 가능성 높음" },
+      { label: "패", className: "loss", title: "필라델피아 @ 신시내티", detail: "홈 2점차 이상 패 61.3% · 필라델피아 승리확률 77.5%" }
+    ];
+
+    const teamKoById = {
+      108: "LA 에인절스", 109: "애리조나 다이아몬드백스", 110: "볼티모어 오리올스",
+      111: "보스턴 레드삭스", 112: "시카고 컵스", 113: "신시내티 레즈",
+      114: "클리블랜드 가디언스", 115: "콜로라도 로키스", 116: "디트로이트 타이거스",
+      117: "휴스턴 애스트로스", 118: "캔자스시티 로열스", 119: "LA 다저스",
+      120: "워싱턴 내셔널스", 121: "뉴욕 메츠", 133: "애슬레틱스",
+      134: "피츠버그 파이리츠", 135: "샌디에이고 파드리스", 136: "시애틀 매리너스",
+      137: "샌프란시스코 자이언츠", 138: "세인트루이스 카디널스", 139: "탬파베이 레이스",
+      140: "텍사스 레인저스", 141: "토론토 블루제이스", 142: "미네소타 트윈스",
+      143: "필라델피아 필리스", 144: "애틀랜타 브레이브스", 145: "시카고 화이트삭스",
+      146: "마이애미 말린스", 147: "뉴욕 양키스", 158: "밀워키 브루어스"
     };
 
-    const LEAGUE_KO = {
-      103: "아메리칸 리그",
-      104: "내셔널 리그"
-    };
+    const leagueKo = { 103: "아메리칸 리그", 104: "내셔널 리그" };
+    const divisionKo = { 200: "서부지구", 201: "동부지구", 202: "중부지구", 203: "서부지구", 204: "동부지구", 205: "중부지구" };
 
-    const DIVISION_KO = {
-      200: "서부지구",
-      201: "동부지구",
-      202: "중부지구",
-      203: "서부지구",
-      204: "동부지구",
-      205: "중부지구"
-    };
+    const state = { query: "", pick: "all" };
 
-    const state = {
-      records: [],
-      league: "all",
-      query: "",
-      season: new Date().getFullYear()
-    };
-
-    const standingsEl = document.getElementById("standings");
-    const statusEl = document.getElementById("status");
-    const refreshEl = document.getElementById("refresh");
+    const topPicksEl = document.getElementById("topPicks");
+    const gamesEl = document.getElementById("games");
     const searchEl = document.getElementById("search");
-    const bestPctEl = document.getElementById("bestPct");
-    const bestWinsEl = document.getElementById("bestWins");
-    const teamCountEl = document.getElementById("teamCount");
-    const seasonEl = document.getElementById("season");
+    const strongTeamsEl = document.getElementById("strongTeams");
+    const notesEl = document.getElementById("notes");
+    const standingsEl = document.getElementById("standings");
+    const standingsStatusEl = document.getElementById("standingsStatus");
+
+    function normalize(text) {
+      return String(text || "").toLowerCase().replace(/\s+/g, "");
+    }
+
+    function pickClass(pick) {
+      if (pick === "승") return "win";
+      if (pick === "1") return "one";
+      return "loss";
+    }
+
+    function renderTopPicks() {
+      topPicksEl.innerHTML = topPicks.map((item) => `
+        <article class="pick-card">
+          <span class="pill ${item.className}">${item.label}</span>
+          <h3>${item.title}</h3>
+          <p>${item.detail}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderGames() {
+      const query = normalize(state.query);
+      const filtered = games.filter((game) => {
+        const text = normalize(`${game.awayKo} ${game.awayEn} ${game.homeKo} ${game.homeEn} ${game.favoriteKo}`);
+        const pickOk = state.pick === "all" || game.pick === state.pick;
+        return pickOk && (!query || text.includes(query));
+      });
+
+      if (!filtered.length) {
+        gamesEl.innerHTML = `<div class="empty">조건에 맞는 경기가 없습니다.</div>`;
+        return;
+      }
+
+      gamesEl.innerHTML = filtered.map((game) => `
+        <article class="game-card">
+          <div class="game-head">
+            <div class="teams">
+              ${game.awayKo} @ ${game.homeKo}
+              <small>${game.awayEn} @ ${game.homeEn}</small>
+            </div>
+            <span class="pill ${pickClass(game.pick)}">${game.pick}</span>
+          </div>
+          <div class="game-body">
+            <div class="datum">
+              <span>픽 확률</span>
+              <strong class="prob">${game.pickProb.toFixed(1)}%</strong>
+            </div>
+            <div class="datum">
+              <span>승리 우세</span>
+              <strong>${game.favoriteKo} ${game.winProb.toFixed(1)}%</strong>
+            </div>
+            <div class="datum">
+              <span>예상 스코어</span>
+              <strong>${game.score}</strong>
+            </div>
+            <div class="datum">
+              <span>신뢰도</span>
+              <strong>${game.confidence}</strong>
+            </div>
+            <div class="datum" style="grid-column: span 2;">
+              <span>근거</span>
+              <strong>${game.reason}</strong>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderStrongTeams() {
+      strongTeamsEl.innerHTML = strongTeams.map(([team, probability]) => `
+        <article class="pick-card">
+          <span class="pill win">${probability.toFixed(1)}%</span>
+          <h3>${team}</h3>
+          <p>일반 승리확률 62% 이상 구간</p>
+        </article>
+      `).join("");
+    }
+
+    function renderNotes() {
+      notesEl.innerHTML = notes.map(([title, body]) => `
+        <article class="note-card">
+          <h3>${title}</h3>
+          <p>${body}</p>
+        </article>
+      `).join("");
+    }
 
     function pctText(value) {
       const number = Number(value);
@@ -493,174 +737,109 @@
       return `${(number * 100).toFixed(1)}%`;
     }
 
-    function normalize(text) {
-      return String(text || "").toLowerCase().replace(/\s+/g, "");
-    }
+    function renderStandings(records) {
+      standingsStatusEl.remove();
+      standingsEl.innerHTML = records.map((record) => {
+        const leagueName = leagueKo[record.league.id] || record.league.name;
+        const divisionName = divisionKo[record.division.id] || record.division.name;
+        const teams = record.teamRecords
+          .map((teamRecord) => ({
+            id: teamRecord.team.id,
+            ko: teamKoById[teamRecord.team.id] || teamRecord.team.name,
+            en: teamRecord.team.name,
+            abbr: teamRecord.team.abbreviation || teamRecord.team.teamName.slice(0, 3).toUpperCase(),
+            wins: Number(teamRecord.wins),
+            losses: Number(teamRecord.losses),
+            pct: Number(teamRecord.winningPercentage),
+            gamesBack: teamRecord.gamesBack,
+            streak: teamRecord.streak?.streakCode || "-",
+            lastTen: teamRecord.records?.splitRecords?.find((item) => item.type === "lastTen")
+          }))
+          .sort((a, b) => b.pct - a.pct || b.wins - a.wins);
 
-    function mapRecord(record) {
-      const teams = record.teamRecords.map((teamRecord) => {
-        const team = teamRecord.team;
-        const leagueId = record.league.id;
-        return {
-          id: team.id,
-          rank: Number(teamRecord.divisionRank || teamRecord.leagueRank || 0),
-          leagueId,
-          leagueCode: leagueId === 103 ? "AL" : "NL",
-          leagueName: LEAGUE_KO[leagueId] || record.league.name,
-          divisionId: record.division.id,
-          divisionName: `${LEAGUE_KO[leagueId] || record.league.name} ${DIVISION_KO[record.division.id] || record.division.name}`,
-          nameKo: TEAM_KO[team.id] || team.name,
-          nameEn: team.name,
-          abbr: team.abbreviation || team.teamName.slice(0, 3).toUpperCase(),
-          wins: Number(teamRecord.wins),
-          losses: Number(teamRecord.losses),
-          pct: Number(teamRecord.winningPercentage),
-          gamesBack: teamRecord.gamesBack,
-          streak: teamRecord.streak?.streakCode || "-",
-          lastTen: teamRecord.records?.splitRecords?.find((item) => item.type === "lastTen")
-        };
-      });
-
-      return {
-        id: record.division.id,
-        leagueId: record.league.id,
-        leagueCode: record.league.id === 103 ? "AL" : "NL",
-        name: `${LEAGUE_KO[record.league.id] || record.league.name} ${DIVISION_KO[record.division.id] || record.division.name}`,
-        teams: teams.sort((a, b) => b.pct - a.pct || b.wins - a.wins)
-      };
-    }
-
-    function updateSummary(teams) {
-      const bestPct = teams.reduce((best, team) => team.pct > (best?.pct ?? -1) ? team : best, null);
-      const bestWins = teams.reduce((best, team) => team.wins > (best?.wins ?? -1) ? team : best, null);
-
-      bestPctEl.textContent = bestPct ? `${bestPct.nameKo} ${pctText(bestPct.pct)}` : "-";
-      bestWinsEl.textContent = bestWins ? `${bestWins.nameKo} ${bestWins.wins}승` : "-";
-      teamCountEl.textContent = `${teams.length}팀`;
-      seasonEl.textContent = `${state.season}`;
-    }
-
-    function render() {
-      const query = normalize(state.query);
-      const filteredDivisions = state.records
-        .filter((division) => state.league === "all" || division.leagueCode === state.league)
-        .map((division) => ({
-          ...division,
-          teams: division.teams.filter((team) => {
-            const haystack = normalize(`${team.nameKo} ${team.nameEn} ${team.abbr}`);
-            return !query || haystack.includes(query);
-          })
-        }))
-        .filter((division) => division.teams.length > 0);
-
-      const visibleTeams = filteredDivisions.flatMap((division) => division.teams);
-      updateSummary(visibleTeams);
-
-      if (!visibleTeams.length) {
-        standingsEl.innerHTML = `<div class="empty">검색 결과가 없습니다.</div>`;
-        statusEl.textContent = "조건에 맞는 팀이 없습니다.";
-        return;
-      }
-
-      statusEl.textContent = `${new Date().toLocaleString("ko-KR")} 기준으로 ${visibleTeams.length}개 팀을 표시 중입니다.`;
-
-      standingsEl.innerHTML = filteredDivisions.map((division) => `
-        <section class="division">
-          <div class="division-head">
-            <h2>${division.name}</h2>
-            <span>${division.teams.length}팀</span>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th class="rank">순위</th>
-                  <th class="team">팀</th>
-                  <th>승</th>
-                  <th>패</th>
-                  <th>승률</th>
-                  <th>게임차</th>
-                  <th>최근 10경기</th>
-                  <th>연속</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${division.teams.map((team, index) => `
+        return `
+          <article class="standings-card">
+            <div class="standings-head">
+              <h3>${leagueName} ${divisionName}</h3>
+              <span>${teams.length}팀</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
                   <tr>
-                    <td class="rank">${index + 1}</td>
-                    <td class="team">
-                      <div class="team-cell">
-                        <span class="abbr">${team.abbr}</span>
-                        <span class="team-names">
-                          <span class="team-ko">${team.nameKo}</span>
-                          <span class="team-en">${team.nameEn}</span>
-                        </span>
-                      </div>
-                    </td>
-                    <td>${team.wins}</td>
-                    <td>${team.losses}</td>
-                    <td class="pct">${pctText(team.pct)}</td>
-                    <td>${team.gamesBack}</td>
-                    <td>${team.lastTen ? `${team.lastTen.wins}승 ${team.lastTen.losses}패` : "-"}</td>
-                    <td>${team.streak}</td>
+                    <th class="rank-col">순위</th>
+                    <th class="team-col">팀</th>
+                    <th>승</th>
+                    <th>패</th>
+                    <th>승률</th>
+                    <th>게임차</th>
+                    <th>최근 10경기</th>
+                    <th>연속</th>
                   </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      `).join("");
+                </thead>
+                <tbody>
+                  ${teams.map((team, index) => `
+                    <tr>
+                      <td class="rank-col">${index + 1}</td>
+                      <td class="team-col">
+                        <div class="team-cell">
+                          <span class="abbr">${team.abbr}</span>
+                          <span>
+                            <span class="team-ko">${team.ko}</span>
+                            <span class="team-en">${team.en}</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td>${team.wins}</td>
+                      <td>${team.losses}</td>
+                      <td class="prob">${pctText(team.pct)}</td>
+                      <td>${team.gamesBack}</td>
+                      <td>${team.lastTen ? `${team.lastTen.wins}승 ${team.lastTen.losses}패` : "-"}</td>
+                      <td>${team.streak}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        `;
+      }).join("");
     }
 
     async function loadStandings() {
-      refreshEl.disabled = true;
-      statusEl.textContent = "MLB 순위를 불러오는 중...";
-      standingsEl.innerHTML = "";
-
       try {
         const season = new Date().getFullYear();
         const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${season}&standingsTypes=regularSeason`;
         const response = await fetch(url, { cache: "no-store" });
-
-        if (!response.ok) {
-          throw new Error(`MLB API 오류: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`MLB API ${response.status}`);
         const data = await response.json();
-        state.season = season;
-        state.records = data.records.map(mapRecord);
-        render();
+        renderStandings(data.records || []);
       } catch (error) {
         console.error(error);
-        standingsEl.innerHTML = `<div class="error">순위를 불러오지 못했습니다. 잠시 후 새로고침을 눌러 주세요.</div>`;
-        statusEl.textContent = "MLB 데이터 연결 실패";
-        updateSummary([]);
-      } finally {
-        refreshEl.disabled = false;
+        standingsStatusEl.className = "error";
+        standingsStatusEl.textContent = "MLB 시즌 승률표를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.";
       }
     }
 
-    refreshEl.addEventListener("click", loadStandings);
-
     searchEl.addEventListener("input", (event) => {
       state.query = event.target.value;
-      render();
+      renderGames();
     });
 
     document.querySelectorAll(".tab").forEach((button) => {
       button.addEventListener("click", () => {
-        state.league = button.dataset.league;
+        state.pick = button.dataset.pick;
         document.querySelectorAll(".tab").forEach((tab) => {
           tab.setAttribute("aria-pressed", String(tab === button));
         });
-        render();
+        renderGames();
       });
     });
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", async () => {
         try {
-          const registration = await navigator.serviceWorker.register("./sw.js?v=3");
+          const registration = await navigator.serviceWorker.register("./sw.js?v=4");
           await registration.update();
         } catch (error) {
           console.warn("Service worker registration failed", error);
@@ -668,6 +847,10 @@
       });
     }
 
+    renderTopPicks();
+    renderGames();
+    renderStrongTeams();
+    renderNotes();
     loadStandings();
   </script>
 </body>
