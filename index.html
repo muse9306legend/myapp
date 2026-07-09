@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>해외스포츠 승률 분석</title>
+  <title>스포츠 승률 분석</title>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10233f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -117,7 +117,7 @@
       margin: 20px 0 18px;
     }
 
-    .sport-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sport-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .view-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
     .sport-tab,
@@ -543,19 +543,21 @@
       <div class="brand">
         <div class="mark" aria-hidden="true">MLB</div>
         <div>
-          <h1>해외스포츠 승률 분석</h1>
-          <p class="subtitle">해외야구와 해외축구 예측, 지난 결과, 앞으로 경기 일정을 전환해 봅니다.</p>
+          <h1>스포츠 승률 분석</h1>
+          <p class="subtitle">야구와 축구, 해외와 국내 리그 예측을 한 화면에서 전환해 봅니다.</p>
         </div>
       </div>
       <div class="updated">2026-07-09 KST 분석</div>
     </header>
 
-    <p class="notice">MLB 예측은 매일 오후 8시(KST), 해외축구 예측은 매일 오후 6시(KST)에 업데이트됩니다. 지난 경기 결과는 MLB 오후 3시 30분, 해외축구 오전 8시 30분(KST)에 반영됩니다.</p>
+    <p class="notice">MLB는 매일 오후 8시, KBO는 오후 2시, 해외축구는 오후 6시, K리그는 경기일 오전 10시(KST)에 예측을 업데이트합니다. 지난 경기 결과는 종목별 종료 시간 이후 반영됩니다.</p>
     <p class="schedule-copy">분석 참고용이며 베팅 보장이 아닙니다. 선발 라인업, 부상자, 경기 직전 선발 투수 변경에 따라 신뢰도는 달라질 수 있습니다.</p>
 
     <nav class="sport-tabs" aria-label="종목 선택">
       <button class="sport-tab" type="button" data-sport="baseball" aria-pressed="true">해외야구 MLB</button>
       <button class="sport-tab" type="button" data-sport="soccer" aria-pressed="false">해외축구</button>
+      <button class="sport-tab" type="button" data-sport="kbo" aria-pressed="false">국내야구 KBO</button>
+      <button class="sport-tab" type="button" data-sport="kleague" aria-pressed="false">국내축구 K리그</button>
     </nav>
 
     <nav class="view-tabs baseball-view" aria-label="MLB 분석 화면 선택">
@@ -739,6 +741,92 @@
       </section>
       <section class="notes" id="soccerNotes"></section>
     </section>
+
+    <section class="view" id="view-kbo">
+      <section class="summary" aria-label="KBO 요약">
+        <div class="metric">
+          <span>KBO 예측 업데이트</span>
+          <strong>14:00 KST</strong>
+          <small>경기일 기본 분석</small>
+        </div>
+        <div class="metric">
+          <span>KBO 최종 점검</span>
+          <strong>경기 1시간 전</strong>
+          <small>라인업/선발 재확인</small>
+        </div>
+        <div class="metric">
+          <span>KBO 결과 반영</span>
+          <strong>23:00 KST</strong>
+          <small>경기 종료 후 적중률</small>
+        </div>
+        <div class="metric">
+          <span>예측 방식</span>
+          <strong>승 / 1 / 패</strong>
+          <small>홈팀 기준</small>
+        </div>
+      </section>
+
+      <section class="section-title">
+        <h2>오늘 KBO 승률 보기</h2>
+        <p>선발투수, 최근 흐름, 불펜 피로도 중심</p>
+      </section>
+      <section class="game-grid" id="kboFixtures"></section>
+
+      <section class="section-title">
+        <h2>지난 KBO 결과 보기</h2>
+        <p>승/1/패 적중률과 주요 픽 결과</p>
+      </section>
+      <section class="result-list" id="kboResults"></section>
+
+      <section class="section-title">
+        <h2>KBO 주의 변수</h2>
+        <p>선발, 불펜, 구장, 날씨</p>
+      </section>
+      <section class="notes" id="kboNotes"></section>
+    </section>
+
+    <section class="view" id="view-kleague">
+      <section class="summary" aria-label="K리그 요약">
+        <div class="metric">
+          <span>K리그 예측 업데이트</span>
+          <strong>10:00 KST</strong>
+          <small>경기일 오전 분석</small>
+        </div>
+        <div class="metric">
+          <span>K리그 최종 점검</span>
+          <strong>첫 경기 1시간 전</strong>
+          <small>라인업/결장 확인</small>
+        </div>
+        <div class="metric">
+          <span>K리그 결과 반영</span>
+          <strong>22:30 KST</strong>
+          <small>늦은 경기 종료 후</small>
+        </div>
+        <div class="metric">
+          <span>예측 방식</span>
+          <strong>홈승 / 무 / 원정승</strong>
+          <small>승무패 기준</small>
+        </div>
+      </section>
+
+      <section class="section-title">
+        <h2>오늘 K리그 승률 보기</h2>
+        <p>홈/원정 성적, 최근 흐름, 결장 변수 중심</p>
+      </section>
+      <section class="game-grid" id="kleagueFixtures"></section>
+
+      <section class="section-title">
+        <h2>지난 K리그 결과 보기</h2>
+        <p>승무패 적중률과 주요 픽 결과</p>
+      </section>
+      <section class="result-list" id="kleagueResults"></section>
+
+      <section class="section-title">
+        <h2>K리그 주의 변수</h2>
+        <p>부상, 징계, 일정 과밀, ACL 병행</p>
+      </section>
+      <section class="notes" id="kleagueNotes"></section>
+    </section>
   </main>
 
   <script>
@@ -798,6 +886,42 @@
       ["라인업 변수", "축구는 경기 약 60분 전 선발 명단이 공개되므로 최종 점검 기능을 나중에 붙이는 것이 좋습니다."],
       ["리그 우선순위", "1차는 EPL, 라리가, 챔피언스리그 중심으로 시작하고 이후 세리에A, 분데스리가, 리그1을 확장합니다."],
       ["예측 기준", "축구 기본 픽은 홈승/무/원정승입니다. 오버/언더 2.5골과 양팀득점은 고급 지표로 분리합니다."]
+    ];
+
+    const kboFixtures = [
+      { startKst: "경기일 18:30", awayKo: "LG 트윈스", homeKo: "두산 베어스", pick: "1", pickProb: 36.0, favoriteKo: "두산", winProb: 52.0, score: "LG 4 - 5 두산", confidence: "예비", reason: "KBO 데이터 연결 후 선발투수, 최근 타격 흐름, 불펜 피로도를 반영합니다." },
+      { startKst: "경기일 18:30", awayKo: "KIA 타이거즈", homeKo: "삼성 라이온즈", pick: "승", pickProb: 43.0, favoriteKo: "삼성", winProb: 57.0, score: "KIA 3 - 5 삼성", confidence: "예비", reason: "홈팀 기준 승/1/패 구조를 MLB와 동일하게 유지합니다." },
+      { startKst: "경기일 18:30", awayKo: "롯데 자이언츠", homeKo: "SSG 랜더스", pick: "패", pickProb: 41.0, favoriteKo: "롯데", winProb: 55.0, score: "롯데 6 - 4 SSG", confidence: "예비", reason: "구장/날씨와 불펜 사용량을 별도 주의 변수로 표시합니다." }
+    ];
+
+    const kboResults = [
+      { date: "KBO", title: "지난 경기 결과", body: "경기 종료 후 23:00(KST)에 승/1/패 적중률을 반영합니다.", badge: "준비", className: "info" },
+      { date: "지표", title: "일반 승리팀 적중률", body: "승리팀 예측과 홈팀 기준 승/1/패를 따로 누적합니다.", badge: "예정", className: "one" },
+      { date: "백테스트", title: "선발/불펜 변수 검증", body: "KBO는 팀 수가 적어 날짜별 모델 개선을 보기 좋습니다.", badge: "다음", className: "win" }
+    ];
+
+    const kboNotes = [
+      ["선발투수", "KBO는 선발투수 영향이 커서 예측 화면 첫 번째 근거로 보여주는 것이 좋습니다."],
+      ["불펜 피로도", "최근 2~3일 등판 수와 투구 수를 반영하면 접전 예측 품질이 좋아집니다."],
+      ["날씨/구장", "잠실, 문학, 대구, 사직 등 구장 특성과 우천 취소 가능성을 별도로 표시합니다."]
+    ];
+
+    const kLeagueFixtures = [
+      { league: "K리그1", startKst: "경기일 19:00", homeKo: "울산 HD", awayKo: "전북 현대", pick: "홈승", homeProb: 42.0, drawProb: 29.0, awayProb: 29.0, score: "울산 2 - 1 전북", confidence: "예비", reason: "홈/원정 성적, 최근 득실, 결장자 정보를 연결한 뒤 실제 수치를 채웁니다." },
+      { league: "K리그1", startKst: "경기일 19:30", homeKo: "FC서울", awayKo: "수원FC", pick: "무", homeProb: 35.0, drawProb: 31.0, awayProb: 34.0, score: "서울 1 - 1 수원FC", confidence: "예비", reason: "승무패 기본 구조로 해외축구와 같은 화면 흐름을 사용합니다." },
+      { league: "K리그2", startKst: "경기일 16:30", homeKo: "부산 아이파크", awayKo: "전남 드래곤즈", pick: "원정승", homeProb: 30.0, drawProb: 28.0, awayProb: 42.0, score: "부산 1 - 2 전남", confidence: "예비", reason: "K리그2는 리그 필터로 분리해서 확장할 수 있습니다." }
+    ];
+
+    const kLeagueResults = [
+      { date: "K리그", title: "지난 경기 결과", body: "경기일 22:30(KST)에 승무패 적중률을 반영합니다.", badge: "준비", className: "info" },
+      { date: "지표", title: "홈승/무/원정승 적중률", body: "축구는 무승부 예측을 별도 지표로 관리합니다.", badge: "예정", className: "one" },
+      { date: "확장", title: "오버/언더와 양팀득점", body: "1차 승무패 구조 안정화 후 고급 지표로 추가합니다.", badge: "다음", className: "win" }
+    ];
+
+    const kLeagueNotes = [
+      ["결장/징계", "퇴장 누적, 부상, 대표팀 차출은 K리그 예측에서 크게 작용합니다."],
+      ["일정 과밀", "FA컵, ACL, 원정 연전이 겹치는 팀은 체력 변수를 표시합니다."],
+      ["홈/원정 성적", "K리그는 홈/원정 편차와 최근 득실 흐름을 함께 보는 구성이 좋습니다."]
     ];
 
     const results = [
@@ -948,6 +1072,60 @@
       `).join("");
     }
 
+    function renderKbo() {
+      document.getElementById("kboFixtures").innerHTML = kboFixtures.map((game) => gameCard(game, true)).join("");
+      document.getElementById("kboResults").innerHTML = kboResults.map((item) => `
+        <article class="result-row">
+          <div>${item.date}</div>
+          <div>${item.title}<small>${item.body}</small></div>
+          <span class="pill ${item.className}">${item.badge}</span>
+        </article>
+      `).join("");
+      document.getElementById("kboNotes").innerHTML = kboNotes.map(([title, body]) => `
+        <article class="note-card">
+          <h3>${title}</h3>
+          <p>${body}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderKLeague() {
+      document.getElementById("kleagueFixtures").innerHTML = kLeagueFixtures.map((game) => `
+        <article class="game-card">
+          <div class="game-head">
+            <div class="teams">
+              <span class="pill info">${game.league}</span>
+              <span class="pill info">${game.startKst}</span><br>
+              ${game.homeKo} vs ${game.awayKo}
+              <small>홈승/무/원정승 예측</small>
+            </div>
+            <span class="pill ${game.pick === "홈승" ? "win" : game.pick === "무" ? "one" : "loss"}">${game.pick}</span>
+          </div>
+          <div class="game-body">
+            <div class="datum"><span>홈승</span><strong class="prob">${game.homeProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>무승부</span><strong>${game.drawProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>원정승</span><strong>${game.awayProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>예상 스코어</span><strong>${game.score}</strong></div>
+            <div class="datum"><span>신뢰도</span><strong>${game.confidence}</strong></div>
+            <div class="datum"><span>근거</span><strong>${game.reason}</strong></div>
+          </div>
+        </article>
+      `).join("");
+      document.getElementById("kleagueResults").innerHTML = kLeagueResults.map((item) => `
+        <article class="result-row">
+          <div>${item.date}</div>
+          <div>${item.title}<small>${item.body}</small></div>
+          <span class="pill ${item.className}">${item.badge}</span>
+        </article>
+      `).join("");
+      document.getElementById("kleagueNotes").innerHTML = kLeagueNotes.map(([title, body]) => `
+        <article class="note-card">
+          <h3>${title}</h3>
+          <p>${body}</p>
+        </article>
+      `).join("");
+    }
+
     function renderResults() {
       document.getElementById("results").innerHTML = results.map((item) => `
         <article class="result-row">
@@ -1030,10 +1208,13 @@
 
     document.querySelectorAll(".sport-tab").forEach((button) => {
       button.addEventListener("click", () => {
-        const isBaseball = button.dataset.sport === "baseball";
+        const sport = button.dataset.sport;
+        const isBaseball = sport === "baseball";
         document.querySelectorAll(".sport-tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
         document.querySelectorAll(".baseball-view").forEach((item) => item.classList.toggle("sport-hidden", !isBaseball));
-        document.getElementById("view-soccer").classList.toggle("active", !isBaseball);
+        ["soccer", "kbo", "kleague"].forEach((name) => {
+          document.getElementById(`view-${name}`).classList.toggle("active", sport === name);
+        });
         if (isBaseball && !document.querySelector(".baseball-view.view.active")) {
           document.getElementById("view-today").classList.add("active");
         }
@@ -1063,7 +1244,7 @@
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", async () => {
         try {
-          const registration = await navigator.serviceWorker.register("./sw.js?v=6");
+          const registration = await navigator.serviceWorker.register("./sw.js?v=7");
           await registration.update();
         } catch (error) {
           console.warn("Service worker registration failed", error);
@@ -1077,6 +1258,8 @@
     renderStrongTeams();
     renderNotes();
     renderSoccer();
+    renderKbo();
+    renderKLeague();
     renderResults();
     loadStandings();
   </script>
