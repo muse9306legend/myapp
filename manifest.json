@@ -1,6 +1,6 @@
 {
-  "name": "MLB 승률 분석",
-  "short_name": "MLB 승률",
+  "name": "해외스포츠 승률 분석",
+  "short_name": "스포츠 승률",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
