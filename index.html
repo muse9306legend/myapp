@@ -31,7 +31,7 @@
       min-height: 100vh;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 310px, transparent 310px),
+        linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 360px, transparent 360px),
         var(--bg);
       color: var(--ink);
     }
@@ -99,22 +99,49 @@
       white-space: nowrap;
     }
 
-    .notice {
+    .notice, .schedule-copy {
       margin: 20px 0 0;
       padding: 12px 14px;
       border: 1px solid rgba(255, 255, 255, .28);
       border-radius: 8px;
       background: rgba(255, 255, 255, .1);
-      color: rgba(255, 255, 255, .86);
+      color: rgba(255, 255, 255, .88);
       font-size: 13px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
+
+    .view-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 20px 0 18px;
+    }
+
+    .view-tab {
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--navy);
+      box-shadow: 0 8px 18px rgba(16, 35, 63, .08);
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .view-tab[aria-pressed="true"] {
+      border-color: var(--navy);
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
 
     .summary {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
-      margin: 22px 0 18px;
+      margin: 0 0 18px;
     }
 
     .metric {
@@ -222,20 +249,20 @@
       text-align: right;
     }
 
-    .cards {
+    .cards, .notes {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
     }
 
-    .pick-card, .game-card, .note-card, .standings-card {
+    .pick-card, .game-card, .note-card, .standings-card, .result-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
       box-shadow: var(--shadow);
     }
 
-    .pick-card {
+    .pick-card, .note-card, .result-card {
       min-height: 142px;
       padding: 16px;
     }
@@ -257,15 +284,16 @@
     .pill.win { background: #dff5ed; color: var(--green); }
     .pill.one { background: #fff2d8; color: var(--amber); }
     .pill.loss { background: #ffe5e9; color: #b42334; }
+    .pill.info { background: #e8eef8; color: var(--blue); }
 
-    .pick-card h3 {
+    .pick-card h3, .note-card h3, .result-card h3 {
       margin: 12px 0 8px;
       font-size: 18px;
       line-height: 1.25;
       letter-spacing: 0;
     }
 
-    .pick-card p, .note-card p {
+    .pick-card p, .note-card p, .result-card p {
       margin: 0;
       color: var(--muted);
       font-size: 13px;
@@ -279,9 +307,7 @@
       gap: 12px;
     }
 
-    .game-card {
-      overflow: hidden;
-    }
+    .game-card { overflow: hidden; }
 
     .game-head {
       display: flex;
@@ -333,20 +359,31 @@
       font-weight: 950;
     }
 
-    .notes {
+    .result-list {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
     }
 
-    .note-card {
-      padding: 15px;
+    .result-row {
+      display: grid;
+      grid-template-columns: 160px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 64px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(16, 35, 63, .07);
+      font-weight: 850;
     }
 
-    .note-card h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-      line-height: 1.3;
+    .result-row small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 3px;
     }
 
     .standings-card {
@@ -461,18 +498,19 @@
     @media (max-width: 860px) {
       body {
         background:
-          linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 410px, transparent 410px),
+          linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 500px, transparent 500px),
           var(--bg);
       }
 
       .topbar { display: block; }
       .updated { margin-top: 14px; }
-      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .view-tabs, .summary { grid-template-columns: 1fr; }
       .toolbar { grid-template-columns: 1fr; }
       .cards, .game-grid, .notes { grid-template-columns: 1fr; }
       .section-title { display: block; }
       .section-title p { margin-top: 5px; text-align: left; }
       .game-body { grid-template-columns: 1fr 1fr; }
+      .result-row { grid-template-columns: 1fr; align-items: start; }
     }
 
     @media (max-width: 520px) {
@@ -500,110 +538,176 @@
         <div class="mark" aria-hidden="true">MLB</div>
         <div>
           <h1>MLB 승률 분석</h1>
-          <p class="subtitle">Teruha가 매일 정리하는 경기별 승/1/패 픽과 승률 흐름을 한눈에 봅니다.</p>
+          <p class="subtitle">오늘 예측, 지난 결과, 앞으로 경기 일정을 한 화면에서 전환해 봅니다.</p>
         </div>
       </div>
       <div class="updated">2026-07-09 KST 분석</div>
     </header>
 
-    <p class="notice">분석 참고용이며 베팅 보장이 아닙니다. 선발 라인업, 부상자, 경기 직전 선발 투수 변경에 따라 신뢰도는 달라질 수 있습니다.</p>
+    <p class="notice">매일 오후 8시(KST)에 다음 경기 승률 예측이 업데이트됩니다. 지난 경기 결과와 적중률은 매일 오후 3시 30분(KST)에 반영됩니다.</p>
+    <p class="schedule-copy">분석 참고용이며 베팅 보장이 아닙니다. 선발 라인업, 부상자, 경기 직전 선발 투수 변경에 따라 신뢰도는 달라질 수 있습니다.</p>
 
-    <section class="summary" aria-label="오늘 요약">
-      <div class="metric">
-        <span>오늘 경기 수</span>
-        <strong id="gameCount">13경기</strong>
-        <small>홈팀 기준 승/1/패</small>
-      </div>
-      <div class="metric">
-        <span>최고 홈 승 픽</span>
-        <strong>디트로이트</strong>
-        <small>홈 승 79.9%</small>
-      </div>
-      <div class="metric">
-        <span>최고 1 픽</span>
-        <strong>클리블랜드 @ 미네소타</strong>
-        <small>1점차 이내 37.6%</small>
-      </div>
-      <div class="metric">
-        <span>최고 패 픽</span>
-        <strong>필라델피아 @ 신시내티</strong>
-        <small>홈 2점차 이상 패 61.3%</small>
-      </div>
+    <nav class="view-tabs" aria-label="MLB 분석 화면 선택">
+      <button class="view-tab" type="button" data-view="today" aria-pressed="true">오늘 경기 승률 보기</button>
+      <button class="view-tab" type="button" data-view="results" aria-pressed="false">지난 경기 결과 보기</button>
+      <button class="view-tab" type="button" data-view="schedule" aria-pressed="false">경기 일정과 승률 보기</button>
+    </nav>
+
+    <section class="view active" id="view-today">
+      <section class="summary" aria-label="오늘 요약">
+        <div class="metric">
+          <span>오늘 경기 수</span>
+          <strong>13경기</strong>
+          <small>홈팀 기준 승/1/패</small>
+        </div>
+        <div class="metric">
+          <span>최고 홈 승 픽</span>
+          <strong>디트로이트</strong>
+          <small>홈 승 79.9%</small>
+        </div>
+        <div class="metric">
+          <span>최고 1 픽</span>
+          <strong>클리블랜드 @ 미네소타</strong>
+          <small>1점차 이내 37.6%</small>
+        </div>
+        <div class="metric">
+          <span>최고 패 픽</span>
+          <strong>필라델피아 @ 신시내티</strong>
+          <small>홈 2점차 이상 패 61.3%</small>
+        </div>
+      </section>
+
+      <section class="section-title">
+        <h2>가장 확률 높은 승/1/패 픽</h2>
+        <p>홈팀 기준: 승 = 홈 2점차 이상 승, 1 = 1점차 이내, 패 = 홈 2점차 이상 패</p>
+      </section>
+      <section class="cards" id="topPicks"></section>
+
+      <section class="section-title">
+        <h2>오늘 경기 전체 픽</h2>
+        <p>팀명 검색과 픽 필터로 빠르게 확인</p>
+      </section>
+      <section class="toolbar" aria-label="경기 필터">
+        <input class="search" id="search" type="search" placeholder="팀명 검색: 양키스, 디트로이트, Phillies..." autocomplete="off" />
+        <div class="tabs" role="group" aria-label="픽 선택">
+          <button class="tab" type="button" data-pick="all" aria-pressed="true">전체</button>
+          <button class="tab" type="button" data-pick="승" aria-pressed="false">승</button>
+          <button class="tab" type="button" data-pick="1" aria-pressed="false">1</button>
+          <button class="tab" type="button" data-pick="패" aria-pressed="false">패</button>
+        </div>
+      </section>
+      <section class="game-grid" id="games" aria-live="polite"></section>
+
+      <section class="section-title">
+        <h2>승률 62% 이상 팀</h2>
+        <p>일반 승리확률 기준</p>
+      </section>
+      <section class="cards" id="strongTeams"></section>
+
+      <section class="section-title">
+        <h2>주의해서 볼 경기</h2>
+        <p>구장, 날씨, 불펜, 부상 변수</p>
+      </section>
+      <section class="notes" id="notes"></section>
     </section>
 
-    <section class="section-title">
-      <h2>가장 확률 높은 승/1/패 픽</h2>
-      <p>홈팀 기준: 승 = 홈 2점차 이상 승, 1 = 1점차 이내, 패 = 홈 2점차 이상 패</p>
+    <section class="view" id="view-results">
+      <section class="summary" aria-label="지난 경기 결과 요약">
+        <div class="metric">
+          <span>최종 경기</span>
+          <strong>15경기</strong>
+          <small>2026-07-08 결과 반영</small>
+        </div>
+        <div class="metric">
+          <span>일반 승리팀 적중률</span>
+          <strong>73.3%</strong>
+          <small>11 / 15</small>
+        </div>
+        <div class="metric">
+          <span>승/1/패 적중률</span>
+          <strong>46.7%</strong>
+          <small>7 / 15</small>
+        </div>
+        <div class="metric">
+          <span>모델 지표</span>
+          <strong>Brier 0.183</strong>
+          <small>평균 스코어 오차 6.07</small>
+        </div>
+      </section>
+
+      <section class="section-title">
+        <h2>지난 경기 결과</h2>
+        <p>매일 오후 3시 30분(KST) 이후 최종 반영</p>
+      </section>
+      <section class="result-list" id="results"></section>
     </section>
 
-    <section class="cards" id="topPicks"></section>
+    <section class="view" id="view-schedule">
+      <section class="summary" aria-label="앞으로 경기 일정 요약">
+        <div class="metric">
+          <span>예측 업데이트</span>
+          <strong>20:00 KST</strong>
+          <small>다음 경기 기준</small>
+        </div>
+        <div class="metric">
+          <span>결과 반영</span>
+          <strong>15:30 KST</strong>
+          <small>전일 경기 완료 후</small>
+        </div>
+        <div class="metric">
+          <span>가장 이른 시작</span>
+          <strong>01:35 KST</strong>
+          <small>2026-07-10 기준</small>
+        </div>
+        <div class="metric">
+          <span>늦은 종료 예상</span>
+          <strong>14:00 전후</strong>
+          <small>서부 경기 포함 시</small>
+        </div>
+      </section>
 
-    <section class="section-title">
-      <h2>오늘 경기 전체 픽</h2>
-      <p>팀명 검색과 픽 필터로 빠르게 확인</p>
+      <section class="section-title">
+        <h2>경기 일정과 승률</h2>
+        <p>한국 시간 기준, 예비 분석</p>
+      </section>
+      <section class="game-grid" id="scheduleGames"></section>
+
+      <section class="section-title">
+        <h2>실시간 시즌 승률표</h2>
+        <p>MLB 공식 Stats API 기준, 팀명 한글 표시</p>
+      </section>
+      <section id="standingsStatus" class="empty">MLB 시즌 승률표를 불러오는 중...</section>
+      <section id="standings"></section>
     </section>
-
-    <section class="toolbar" aria-label="경기 필터">
-      <input class="search" id="search" type="search" placeholder="팀명 검색: 양키스, 디트로이트, Phillies..." autocomplete="off" />
-      <div class="tabs" role="group" aria-label="픽 선택">
-        <button class="tab" type="button" data-pick="all" aria-pressed="true">전체</button>
-        <button class="tab" type="button" data-pick="승" aria-pressed="false">승</button>
-        <button class="tab" type="button" data-pick="1" aria-pressed="false">1</button>
-        <button class="tab" type="button" data-pick="패" aria-pressed="false">패</button>
-      </div>
-    </section>
-
-    <section class="game-grid" id="games" aria-live="polite"></section>
-
-    <section class="section-title">
-      <h2>승률 62% 이상 팀</h2>
-      <p>일반 승리확률 기준</p>
-    </section>
-    <section class="cards" id="strongTeams"></section>
-
-    <section class="section-title">
-      <h2>주의해서 볼 경기</h2>
-      <p>구장, 날씨, 불펜, 부상 변수</p>
-    </section>
-    <section class="notes" id="notes"></section>
-
-    <section class="section-title">
-      <h2>실시간 시즌 승률표</h2>
-      <p>MLB 공식 Stats API 기준, 팀명 한글 표시</p>
-    </section>
-    <section id="standingsStatus" class="empty">MLB 시즌 승률표를 불러오는 중...</section>
-    <section id="standings"></section>
   </main>
 
   <script>
-    const analysisDate = "2026-07-09";
-
     const games = [
-      { awayKo: "애틀랜타 브레이브스", awayEn: "Atlanta Braves", homeKo: "피츠버그 파이리츠", homeEn: "Pittsburgh Pirates", pick: "패", pickProb: 38.2, favoriteKo: "애틀랜타", winProb: 55.8, score: "애틀랜타 7 - 6 피츠버그", confidence: "낮음", reason: "선발 ERA 우위, 실점 억제력 우위" },
-      { awayKo: "캔자스시티 로열스", awayEn: "Kansas City Royals", homeKo: "뉴욕 메츠", homeEn: "New York Mets", pick: "패", pickProb: 48.9, favoriteKo: "캔자스시티", winProb: 66.2, score: "캔자스시티 6 - 5 뉴욕 메츠", confidence: "높음", reason: "선발 ERA 우위, 상대 불펜 피로" },
-      { awayKo: "뉴욕 양키스", awayEn: "New York Yankees", homeKo: "탬파베이 레이스", homeEn: "Tampa Bay Rays", pick: "승", pickProb: 50.2, favoriteKo: "탬파베이", winProb: 72.0, score: "뉴욕 양키스 3 - 4 탬파베이", confidence: "높음", reason: "홈 이점, 최근 타선 흐름" },
-      { awayKo: "클리블랜드 가디언스", awayEn: "Cleveland Guardians", homeKo: "미네소타 트윈스", homeEn: "Minnesota Twins", pick: "1", pickProb: 37.6, favoriteKo: "클리블랜드", winProb: 50.0, score: "클리블랜드 6 - 5 미네소타", confidence: "낮음", reason: "양 팀 승률 균형, 접전 가능성" },
-      { awayKo: "보스턴 레드삭스", awayEn: "Boston Red Sox", homeKo: "시카고 화이트삭스", homeEn: "Chicago White Sox", pick: "패", pickProb: 43.7, favoriteKo: "보스턴", winProb: 63.4, score: "보스턴 5 - 4 시카고 화이트삭스", confidence: "높음", reason: "최근 타선 우위, 실점 억제력 우위" },
-      { awayKo: "시카고 컵스", awayEn: "Chicago Cubs", homeKo: "볼티모어 오리올스", homeEn: "Baltimore Orioles", pick: "패", pickProb: 49.1, favoriteKo: "시카고 컵스", winProb: 66.0, score: "시카고 컵스 7 - 5 볼티모어", confidence: "높음", reason: "득점력, 최근 타선, 실점 억제력 우위" },
-      { awayKo: "애슬레틱스", awayEn: "Athletics", homeKo: "디트로이트 타이거스", homeEn: "Detroit Tigers", pick: "승", pickProb: 79.9, favoriteKo: "디트로이트", winProb: 88.5, score: "애슬레틱스 4 - 8 디트로이트", confidence: "높음", reason: "홈 이점, 최근 타선, 선발 ERA 우위" },
-      { awayKo: "시애틀 매리너스", awayEn: "Seattle Mariners", homeKo: "마이애미 말린스", homeEn: "Miami Marlins", pick: "패", pickProb: 44.7, favoriteKo: "시애틀", winProb: 65.9, score: "시애틀 4 - 3 마이애미", confidence: "높음", reason: "선발 ERA 우위, 실점 억제력 우위" },
-      { awayKo: "필라델피아 필리스", awayEn: "Philadelphia Phillies", homeKo: "신시내티 레즈", homeEn: "Cincinnati Reds", pick: "패", pickProb: 61.3, favoriteKo: "필라델피아", winProb: 77.5, score: "필라델피아 6 - 4 신시내티", confidence: "높음", reason: "득점력, 최근 타선, 선발 ERA 우위" },
-      { awayKo: "밀워키 브루어스", awayEn: "Milwaukee Brewers", homeKo: "세인트루이스 카디널스", homeEn: "St. Louis Cardinals", pick: "패", pickProb: 52.2, favoriteKo: "밀워키", winProb: 72.0, score: "밀워키 5 - 3 세인트루이스", confidence: "높음", reason: "득점력, 선발 ERA 우위, 상대 불펜 피로" },
-      { awayKo: "LA 에인절스", awayEn: "Los Angeles Angels", homeKo: "텍사스 레인저스", homeEn: "Texas Rangers", pick: "승", pickProb: 58.5, favoriteKo: "텍사스", winProb: 77.1, score: "LA 에인절스 3 - 5 텍사스", confidence: "높음", reason: "홈 이점, 최근 타선, 실점 억제력 우위" },
-      { awayKo: "애리조나 다이아몬드백스", awayEn: "Arizona Diamondbacks", homeKo: "샌디에이고 파드리스", homeEn: "San Diego Padres", pick: "패", pickProb: 41.2, favoriteKo: "애리조나", winProb: 60.8, score: "애리조나 5 - 4 샌디에이고", confidence: "보통", reason: "득점력, 최근 타선, 선발 ERA 우위" },
-      { awayKo: "콜로라도 로키스", awayEn: "Colorado Rockies", homeKo: "샌프란시스코 자이언츠", homeEn: "San Francisco Giants", pick: "패", pickProb: 41.5, favoriteKo: "콜로라도", winProb: 59.0, score: "콜로라도 7 - 6 샌프란시스코", confidence: "보통", reason: "득점력과 최근 타선 우위" }
+      { startKst: "07/10 01:35", awayKo: "애틀랜타 브레이브스", awayEn: "Atlanta Braves", homeKo: "피츠버그 파이리츠", homeEn: "Pittsburgh Pirates", pick: "패", pickProb: 38.2, favoriteKo: "애틀랜타", winProb: 55.8, score: "애틀랜타 7 - 6 피츠버그", confidence: "낮음", reason: "선발 ERA 우위, 실점 억제력 우위" },
+      { startKst: "07/10 02:10", awayKo: "캔자스시티 로열스", awayEn: "Kansas City Royals", homeKo: "뉴욕 메츠", homeEn: "New York Mets", pick: "패", pickProb: 48.9, favoriteKo: "캔자스시티", winProb: 66.2, score: "캔자스시티 6 - 5 뉴욕 메츠", confidence: "높음", reason: "선발 ERA 우위, 상대 불펜 피로" },
+      { startKst: "07/10 02:10", awayKo: "뉴욕 양키스", awayEn: "New York Yankees", homeKo: "탬파베이 레이스", homeEn: "Tampa Bay Rays", pick: "승", pickProb: 50.2, favoriteKo: "탬파베이", winProb: 72.0, score: "뉴욕 양키스 3 - 4 탬파베이", confidence: "높음", reason: "홈 이점, 최근 타선 흐름" },
+      { startKst: "07/10 02:40", awayKo: "클리블랜드 가디언스", awayEn: "Cleveland Guardians", homeKo: "미네소타 트윈스", homeEn: "Minnesota Twins", pick: "1", pickProb: 37.6, favoriteKo: "클리블랜드", winProb: 50.0, score: "클리블랜드 6 - 5 미네소타", confidence: "낮음", reason: "양 팀 승률 균형, 접전 가능성" },
+      { startKst: "07/10 03:10", awayKo: "보스턴 레드삭스", awayEn: "Boston Red Sox", homeKo: "시카고 화이트삭스", homeEn: "Chicago White Sox", pick: "패", pickProb: 43.7, favoriteKo: "보스턴", winProb: 63.4, score: "보스턴 5 - 4 시카고 화이트삭스", confidence: "높음", reason: "최근 타선 우위, 실점 억제력 우위" },
+      { startKst: "07/10 07:35", awayKo: "시카고 컵스", awayEn: "Chicago Cubs", homeKo: "볼티모어 오리올스", homeEn: "Baltimore Orioles", pick: "패", pickProb: 49.1, favoriteKo: "시카고 컵스", winProb: 66.0, score: "시카고 컵스 7 - 5 볼티모어", confidence: "높음", reason: "득점력, 최근 타선, 실점 억제력 우위" },
+      { startKst: "07/10 07:40", awayKo: "애슬레틱스", awayEn: "Athletics", homeKo: "디트로이트 타이거스", homeEn: "Detroit Tigers", pick: "승", pickProb: 79.9, favoriteKo: "디트로이트", winProb: 88.5, score: "애슬레틱스 4 - 8 디트로이트", confidence: "높음", reason: "홈 이점, 최근 타선, 선발 ERA 우위" },
+      { startKst: "07/10 07:40", awayKo: "시애틀 매리너스", awayEn: "Seattle Mariners", homeKo: "마이애미 말린스", homeEn: "Miami Marlins", pick: "패", pickProb: 44.7, favoriteKo: "시애틀", winProb: 65.9, score: "시애틀 4 - 3 마이애미", confidence: "높음", reason: "선발 ERA 우위, 실점 억제력 우위" },
+      { startKst: "07/10 08:10", awayKo: "필라델피아 필리스", awayEn: "Philadelphia Phillies", homeKo: "신시내티 레즈", homeEn: "Cincinnati Reds", pick: "패", pickProb: 61.3, favoriteKo: "필라델피아", winProb: 77.5, score: "필라델피아 6 - 4 신시내티", confidence: "높음", reason: "득점력, 최근 타선, 선발 ERA 우위" },
+      { startKst: "07/10 08:45", awayKo: "밀워키 브루어스", awayEn: "Milwaukee Brewers", homeKo: "세인트루이스 카디널스", homeEn: "St. Louis Cardinals", pick: "패", pickProb: 52.2, favoriteKo: "밀워키", winProb: 72.0, score: "밀워키 5 - 3 세인트루이스", confidence: "높음", reason: "득점력, 선발 ERA 우위, 상대 불펜 피로" },
+      { startKst: "07/10 09:05", awayKo: "LA 에인절스", awayEn: "Los Angeles Angels", homeKo: "텍사스 레인저스", homeEn: "Texas Rangers", pick: "승", pickProb: 58.5, favoriteKo: "텍사스", winProb: 77.1, score: "LA 에인절스 3 - 5 텍사스", confidence: "높음", reason: "홈 이점, 최근 타선, 실점 억제력 우위" },
+      { startKst: "07/10 10:40", awayKo: "애리조나 다이아몬드백스", awayEn: "Arizona Diamondbacks", homeKo: "샌디에이고 파드리스", homeEn: "San Diego Padres", pick: "패", pickProb: 41.2, favoriteKo: "애리조나", winProb: 60.8, score: "애리조나 5 - 4 샌디에이고", confidence: "보통", reason: "득점력, 최근 타선, 선발 ERA 우위" },
+      { startKst: "07/10 10:45", awayKo: "콜로라도 로키스", awayEn: "Colorado Rockies", homeKo: "샌프란시스코 자이언츠", homeEn: "San Francisco Giants", pick: "패", pickProb: 41.5, favoriteKo: "콜로라도", winProb: 59.0, score: "콜로라도 7 - 6 샌프란시스코", confidence: "보통", reason: "득점력과 최근 타선 우위" }
+    ];
+
+    const topPicks = [
+      { label: "승", className: "win", title: "애슬레틱스 @ 디트로이트", detail: "홈 승 79.9% · 일반 승리확률 디트로이트 88.5%" },
+      { label: "1", className: "one", title: "클리블랜드 @ 미네소타", detail: "1점차 이내 37.6% · 균형 경기라 접전 가능성 높음" },
+      { label: "패", className: "loss", title: "필라델피아 @ 신시내티", detail: "홈 2점차 이상 패 61.3% · 필라델피아 승리확률 77.5%" }
     ];
 
     const strongTeams = [
-      ["디트로이트 타이거스", 88.5],
-      ["필라델피아 필리스", 77.5],
-      ["텍사스 레인저스", 77.1],
-      ["탬파베이 레이스", 72.0],
-      ["밀워키 브루어스", 72.0],
-      ["캔자스시티 로열스", 66.2],
-      ["시카고 컵스", 66.0],
-      ["시애틀 매리너스", 65.9],
-      ["보스턴 레드삭스", 63.4]
+      ["디트로이트 타이거스", 88.5], ["필라델피아 필리스", 77.5], ["텍사스 레인저스", 77.1],
+      ["탬파베이 레이스", 72.0], ["밀워키 브루어스", 72.0], ["캔자스시티 로열스", 66.2],
+      ["시카고 컵스", 66.0], ["시애틀 매리너스", 65.9], ["보스턴 레드삭스", 63.4]
     ];
 
     const notes = [
@@ -612,10 +716,11 @@
       ["부상/라인업 변수", "양키스 핵심 타선 부상 공백, 미네소타 Bailey Ober·Byron Buxton·Ryan Jeffers 이슈 등은 경기 직전 재확인 필요."]
     ];
 
-    const topPicks = [
-      { label: "승", className: "win", title: "애슬레틱스 @ 디트로이트", detail: "홈 승 79.9% · 일반 승리확률 디트로이트 88.5%" },
-      { label: "1", className: "one", title: "클리블랜드 @ 미네소타", detail: "1점차 이내 37.6% · 균형 경기라 접전 가능성 높음" },
-      { label: "패", className: "loss", title: "필라델피아 @ 신시내티", detail: "홈 2점차 이상 패 61.3% · 필라델피아 승리확률 77.5%" }
+    const results = [
+      { date: "2026-07-08", title: "일반 승리팀 픽", body: "73.3% 적중 · 11/15", badge: "적중 우수", className: "win" },
+      { date: "2026-07-08", title: "승/1/패 픽", body: "46.7% 적중 · 7/15", badge: "보완 필요", className: "one" },
+      { date: "맞은 주요 픽", title: "디트로이트, LA 다저스, 워싱턴, 뉴욕 메츠", body: "홈팀 기준 승/1/패 주요 적중", badge: "맞음", className: "win" },
+      { date: "틀린 주요 픽", title: "샌프란시스코 1→패, 볼티모어 1→패, 텍사스 승→패", body: "접전/강팀 경기에서 오차 발생", badge: "검토", className: "loss" }
     ];
 
     const teamKoById = {
@@ -633,16 +738,7 @@
 
     const leagueKo = { 103: "아메리칸 리그", 104: "내셔널 리그" };
     const divisionKo = { 200: "서부지구", 201: "동부지구", 202: "중부지구", 203: "서부지구", 204: "동부지구", 205: "중부지구" };
-
     const state = { query: "", pick: "all" };
-
-    const topPicksEl = document.getElementById("topPicks");
-    const gamesEl = document.getElementById("games");
-    const searchEl = document.getElementById("search");
-    const strongTeamsEl = document.getElementById("strongTeams");
-    const notesEl = document.getElementById("notes");
-    const standingsEl = document.getElementById("standings");
-    const standingsStatusEl = document.getElementById("standingsStatus");
 
     function normalize(text) {
       return String(text || "").toLowerCase().replace(/\s+/g, "");
@@ -654,8 +750,30 @@
       return "loss";
     }
 
+    function gameCard(game, showTime) {
+      return `
+        <article class="game-card">
+          <div class="game-head">
+            <div class="teams">
+              ${showTime ? `<span class="pill info">${game.startKst}</span><br>` : ""}
+              ${game.awayKo} @ ${game.homeKo}
+              <small>${game.awayEn} @ ${game.homeEn}</small>
+            </div>
+            <span class="pill ${pickClass(game.pick)}">${game.pick}</span>
+          </div>
+          <div class="game-body">
+            <div class="datum"><span>픽 확률</span><strong class="prob">${game.pickProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>승리 우세</span><strong>${game.favoriteKo} ${game.winProb.toFixed(1)}%</strong></div>
+            <div class="datum"><span>예상 스코어</span><strong>${game.score}</strong></div>
+            <div class="datum"><span>신뢰도</span><strong>${game.confidence}</strong></div>
+            <div class="datum" style="grid-column: span 2;"><span>근거</span><strong>${game.reason}</strong></div>
+          </div>
+        </article>
+      `;
+    }
+
     function renderTopPicks() {
-      topPicksEl.innerHTML = topPicks.map((item) => `
+      document.getElementById("topPicks").innerHTML = topPicks.map((item) => `
         <article class="pick-card">
           <span class="pill ${item.className}">${item.label}</span>
           <h3>${item.title}</h3>
@@ -671,49 +789,17 @@
         const pickOk = state.pick === "all" || game.pick === state.pick;
         return pickOk && (!query || text.includes(query));
       });
+      document.getElementById("games").innerHTML = filtered.length
+        ? filtered.map((game) => gameCard(game, false)).join("")
+        : `<div class="empty">조건에 맞는 경기가 없습니다.</div>`;
+    }
 
-      if (!filtered.length) {
-        gamesEl.innerHTML = `<div class="empty">조건에 맞는 경기가 없습니다.</div>`;
-        return;
-      }
-
-      gamesEl.innerHTML = filtered.map((game) => `
-        <article class="game-card">
-          <div class="game-head">
-            <div class="teams">
-              ${game.awayKo} @ ${game.homeKo}
-              <small>${game.awayEn} @ ${game.homeEn}</small>
-            </div>
-            <span class="pill ${pickClass(game.pick)}">${game.pick}</span>
-          </div>
-          <div class="game-body">
-            <div class="datum">
-              <span>픽 확률</span>
-              <strong class="prob">${game.pickProb.toFixed(1)}%</strong>
-            </div>
-            <div class="datum">
-              <span>승리 우세</span>
-              <strong>${game.favoriteKo} ${game.winProb.toFixed(1)}%</strong>
-            </div>
-            <div class="datum">
-              <span>예상 스코어</span>
-              <strong>${game.score}</strong>
-            </div>
-            <div class="datum">
-              <span>신뢰도</span>
-              <strong>${game.confidence}</strong>
-            </div>
-            <div class="datum" style="grid-column: span 2;">
-              <span>근거</span>
-              <strong>${game.reason}</strong>
-            </div>
-          </div>
-        </article>
-      `).join("");
+    function renderScheduleGames() {
+      document.getElementById("scheduleGames").innerHTML = games.map((game) => gameCard(game, true)).join("");
     }
 
     function renderStrongTeams() {
-      strongTeamsEl.innerHTML = strongTeams.map(([team, probability]) => `
+      document.getElementById("strongTeams").innerHTML = strongTeams.map(([team, probability]) => `
         <article class="pick-card">
           <span class="pill win">${probability.toFixed(1)}%</span>
           <h3>${team}</h3>
@@ -723,10 +809,20 @@
     }
 
     function renderNotes() {
-      notesEl.innerHTML = notes.map(([title, body]) => `
+      document.getElementById("notes").innerHTML = notes.map(([title, body]) => `
         <article class="note-card">
           <h3>${title}</h3>
           <p>${body}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderResults() {
+      document.getElementById("results").innerHTML = results.map((item) => `
+        <article class="result-row">
+          <div>${item.date}</div>
+          <div>${item.title}<small>${item.body}</small></div>
+          <span class="pill ${item.className}">${item.badge}</span>
         </article>
       `).join("");
     }
@@ -738,64 +834,41 @@
     }
 
     function renderStandings(records) {
-      standingsStatusEl.remove();
-      standingsEl.innerHTML = records.map((record) => {
+      const status = document.getElementById("standingsStatus");
+      if (status) status.remove();
+      document.getElementById("standings").innerHTML = records.map((record) => {
         const leagueName = leagueKo[record.league.id] || record.league.name;
         const divisionName = divisionKo[record.division.id] || record.division.name;
-        const teams = record.teamRecords
-          .map((teamRecord) => ({
-            id: teamRecord.team.id,
-            ko: teamKoById[teamRecord.team.id] || teamRecord.team.name,
-            en: teamRecord.team.name,
-            abbr: teamRecord.team.abbreviation || teamRecord.team.teamName.slice(0, 3).toUpperCase(),
-            wins: Number(teamRecord.wins),
-            losses: Number(teamRecord.losses),
-            pct: Number(teamRecord.winningPercentage),
-            gamesBack: teamRecord.gamesBack,
-            streak: teamRecord.streak?.streakCode || "-",
-            lastTen: teamRecord.records?.splitRecords?.find((item) => item.type === "lastTen")
-          }))
-          .sort((a, b) => b.pct - a.pct || b.wins - a.wins);
+        const teams = record.teamRecords.map((teamRecord) => ({
+          id: teamRecord.team.id,
+          ko: teamKoById[teamRecord.team.id] || teamRecord.team.name,
+          en: teamRecord.team.name,
+          abbr: teamRecord.team.abbreviation || teamRecord.team.teamName.slice(0, 3).toUpperCase(),
+          wins: Number(teamRecord.wins),
+          losses: Number(teamRecord.losses),
+          pct: Number(teamRecord.winningPercentage),
+          gamesBack: teamRecord.gamesBack,
+          streak: teamRecord.streak?.streakCode || "-",
+          lastTen: teamRecord.records?.splitRecords?.find((item) => item.type === "lastTen")
+        })).sort((a, b) => b.pct - a.pct || b.wins - a.wins);
 
         return `
           <article class="standings-card">
-            <div class="standings-head">
-              <h3>${leagueName} ${divisionName}</h3>
-              <span>${teams.length}팀</span>
-            </div>
+            <div class="standings-head"><h3>${leagueName} ${divisionName}</h3><span>${teams.length}팀</span></div>
             <div class="table-wrap">
               <table>
                 <thead>
-                  <tr>
-                    <th class="rank-col">순위</th>
-                    <th class="team-col">팀</th>
-                    <th>승</th>
-                    <th>패</th>
-                    <th>승률</th>
-                    <th>게임차</th>
-                    <th>최근 10경기</th>
-                    <th>연속</th>
-                  </tr>
+                  <tr><th class="rank-col">순위</th><th class="team-col">팀</th><th>승</th><th>패</th><th>승률</th><th>게임차</th><th>최근 10경기</th><th>연속</th></tr>
                 </thead>
                 <tbody>
                   ${teams.map((team, index) => `
                     <tr>
                       <td class="rank-col">${index + 1}</td>
                       <td class="team-col">
-                        <div class="team-cell">
-                          <span class="abbr">${team.abbr}</span>
-                          <span>
-                            <span class="team-ko">${team.ko}</span>
-                            <span class="team-en">${team.en}</span>
-                          </span>
-                        </div>
+                        <div class="team-cell"><span class="abbr">${team.abbr}</span><span><span class="team-ko">${team.ko}</span><span class="team-en">${team.en}</span></span></div>
                       </td>
-                      <td>${team.wins}</td>
-                      <td>${team.losses}</td>
-                      <td class="prob">${pctText(team.pct)}</td>
-                      <td>${team.gamesBack}</td>
-                      <td>${team.lastTen ? `${team.lastTen.wins}승 ${team.lastTen.losses}패` : "-"}</td>
-                      <td>${team.streak}</td>
+                      <td>${team.wins}</td><td>${team.losses}</td><td class="prob">${pctText(team.pct)}</td><td>${team.gamesBack}</td>
+                      <td>${team.lastTen ? `${team.lastTen.wins}승 ${team.lastTen.losses}패` : "-"}</td><td>${team.streak}</td>
                     </tr>
                   `).join("")}
                 </tbody>
@@ -816,12 +889,22 @@
         renderStandings(data.records || []);
       } catch (error) {
         console.error(error);
-        standingsStatusEl.className = "error";
-        standingsStatusEl.textContent = "MLB 시즌 승률표를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.";
+        const status = document.getElementById("standingsStatus");
+        if (status) {
+          status.className = "error";
+          status.textContent = "MLB 시즌 승률표를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.";
+        }
       }
     }
 
-    searchEl.addEventListener("input", (event) => {
+    document.querySelectorAll(".view-tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".view-tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
+        document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === `view-${button.dataset.view}`));
+      });
+    });
+
+    document.getElementById("search").addEventListener("input", (event) => {
       state.query = event.target.value;
       renderGames();
     });
@@ -829,9 +912,7 @@
     document.querySelectorAll(".tab").forEach((button) => {
       button.addEventListener("click", () => {
         state.pick = button.dataset.pick;
-        document.querySelectorAll(".tab").forEach((tab) => {
-          tab.setAttribute("aria-pressed", String(tab === button));
-        });
+        document.querySelectorAll(".tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
         renderGames();
       });
     });
@@ -839,7 +920,7 @@
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", async () => {
         try {
-          const registration = await navigator.serviceWorker.register("./sw.js?v=4");
+          const registration = await navigator.serviceWorker.register("./sw.js?v=5");
           await registration.update();
         } catch (error) {
           console.warn("Service worker registration failed", error);
@@ -849,8 +930,10 @@
 
     renderTopPicks();
     renderGames();
+    renderScheduleGames();
     renderStrongTeams();
     renderNotes();
+    renderResults();
     loadStandings();
   </script>
 </body>
