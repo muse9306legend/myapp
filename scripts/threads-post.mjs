@@ -21,23 +21,24 @@ async function api(method, path, params = {}) {
   return data;
 }
 
-async function waitUntilReady(containerId) {
-  for (let i = 0; i < 12; i++) {
+async function waitUntilReady(containerId, tries = 12) {
+  for (let i = 0; i < tries; i++) {
     const { status, error_message } = await api("GET", `/${containerId}`, { fields: "status,error_message" });
     if (status === "FINISHED") return;
     if (status === "ERROR" || status === "EXPIRED") throw new Error(`container ${status}: ${error_message || ""}`);
     await sleep(5000);
   }
-  throw new Error("container not ready after 60s");
+  throw new Error(`container not ready after ${tries * 5}s`);
 }
 
 async function publish(post) {
   const params = { media_type: "TEXT", text: post.text };
   if (post.image_url) Object.assign(params, { media_type: "IMAGE", image_url: post.image_url });
+  if (post.video_url) Object.assign(params, { media_type: "VIDEO", video_url: post.video_url });
   if (post.reply_to_id) params.reply_to_id = post.reply_to_id;
 
   const { id: containerId } = await api("POST", "/me/threads", params);
-  await waitUntilReady(containerId);
+  await waitUntilReady(containerId, post.video_url ? 60 : 12);
   const { id } = await api("POST", "/me/threads_publish", { creation_id: containerId });
   const { permalink } = await api("GET", `/${id}`, { fields: "permalink" }).catch(() => ({}));
   return { id, permalink };

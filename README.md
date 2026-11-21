@@ -36,6 +36,7 @@
   "text": "본문 (최대 500자)",
   "status": "draft | pending",
   "image_url": "https://... (선택, 공개 이미지 URL)",
+  "video_url": "https://... (선택, 공개 MP4 URL. media/ 폴더에 넣으면 GitHub Pages 주소로 공개됨)",
   "reply_to_id": "답글로 달 Threads 게시물 ID (선택)"
 }
 ```
