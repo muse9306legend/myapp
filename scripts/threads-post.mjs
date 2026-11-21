@@ -43,6 +43,16 @@ async function publish(post) {
   return { id, permalink };
 }
 
+if (DRY_RUN && TOKEN) {
+  try {
+    const me = await api("GET", "/me", { fields: "username" });
+    console.log(`Token OK: connected to @${me.username}`);
+  } catch (err) {
+    console.error(`Token check failed: ${err.message}`);
+    process.exit(1);
+  }
+}
+
 const queue = JSON.parse(await readFile(QUEUE_FILE, "utf8"));
 const now = Date.now();
 const due = queue.posts.filter((p) => p.status === "pending" && Date.parse(p.at) <= now);
