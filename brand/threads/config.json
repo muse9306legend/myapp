@@ -1,0 +1,5 @@
+{
+  "times": ["08:30", "12:30", "21:00"],
+  "require_approval": true,
+  "topics": []
+}
