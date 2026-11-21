@@ -1,0 +1,28 @@
+name: Threads token refresh
+
+on:
+  schedule:
+    - cron: "0 3 1,15 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Refresh token and update secret
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          NEW_TOKEN="$(node scripts/refresh-token.mjs)"
+          echo "::add-mask::$NEW_TOKEN"
+          gh secret set THREADS_ACCESS_TOKEN --body "$NEW_TOKEN" --repo "$GITHUB_REPOSITORY"

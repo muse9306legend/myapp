@@ -3,1265 +3,188 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>스포츠 승률 분석</title>
+  <title>쓰레드 자동화</title>
   <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#10233f" />
+  <link rel="icon" href="./icon-512.png" />
+  <link rel="apple-touch-icon" href="./icon-maskable.png" />
+  <meta name="theme-color" content="#101010" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f3f6fb;
-      --ink: #121826;
-      --muted: #667085;
-      --line: #d9e2ee;
-      --panel: #ffffff;
-      --navy: #10233f;
-      --red: #c72638;
-      --blue: #2563eb;
-      --green: #11845b;
-      --amber: #b7791f;
-      --shadow: 0 14px 34px rgba(16, 35, 63, .12);
+      --bg: #f5f5f5; --panel: #fff; --ink: #101010; --muted: #6b6b6b; --line: #e2e2e2;
+      --accent: #101010; --accent-ink: #fff; --ok: #12805c; --warn: #b26b00; --bad: #c4314b;
     }
-
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0b0b; --panel: #181818; --ink: #f2f2f2; --muted: #9a9a9a; --line: #2c2c2c;
+        --accent: #f2f2f2; --accent-ink: #101010; --ok: #4cc99a; --warn: #f0b44c; --bad: #ff7a90;
+      }
+    }
     * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 360px, transparent 360px),
-        var(--bg);
-      color: var(--ink);
-    }
-
-    button, input { font: inherit; }
-
-    .app {
-      width: min(1180px, 100%);
-      margin: 0 auto;
-      padding: 22px 16px 42px;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      color: #fff;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .mark {
-      display: grid;
-      flex: 0 0 48px;
-      width: 48px;
-      height: 48px;
-      place-items: center;
-      border: 2px solid rgba(255, 255, 255, .55);
-      border-radius: 8px;
-      background: var(--red);
-      font-size: 20px;
-      font-weight: 900;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(27px, 5vw, 44px);
-      line-height: 1.08;
-      letter-spacing: 0;
-    }
-
-    .subtitle {
-      margin: 7px 0 0;
-      color: rgba(255, 255, 255, .78);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .updated {
-      display: inline-flex;
-      align-items: center;
-      min-height: 38px;
-      padding: 0 12px;
-      border: 1px solid rgba(255, 255, 255, .34);
-      border-radius: 8px;
-      color: rgba(255, 255, 255, .86);
-      font-size: 13px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .notice, .schedule-copy {
-      margin: 20px 0 0;
-      padding: 12px 14px;
-      border: 1px solid rgba(255, 255, 255, .28);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, .1);
-      color: rgba(255, 255, 255, .88);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .sport-tabs,
-    .view-tabs {
-      display: grid;
-      gap: 10px;
-      margin: 20px 0 18px;
-    }
-
-    .sport-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .view-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
-    .sport-tab,
-    .view-tab {
-      min-height: 48px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--navy);
-      box-shadow: 0 8px 18px rgba(16, 35, 63, .08);
-      font-weight: 950;
-      cursor: pointer;
-    }
-
-    .sport-tab[aria-pressed="true"],
-    .view-tab[aria-pressed="true"] {
-      border-color: var(--navy);
-      background: var(--navy);
-      color: #fff;
-    }
-
-    .sport-hidden { display: none !important; }
-    .view { display: none; }
-    .view.active { display: block; }
-
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin: 0 0 18px;
-    }
-
-    .metric {
-      min-height: 98px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .metric span {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .metric strong {
-      display: block;
-      margin-top: 8px;
-      font-size: 23px;
-      line-height: 1.12;
-    }
-
-    .metric small {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      margin: 10px 0 18px;
-    }
-
-    .search {
-      width: 100%;
-      min-height: 46px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--ink);
-      padding: 0 14px;
-      outline: none;
-      box-shadow: 0 8px 18px rgba(16, 35, 63, .07);
-    }
-
-    .search:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .14);
-    }
-
-    .tabs {
-      display: inline-grid;
-      grid-template-columns: repeat(4, minmax(62px, 1fr));
-      min-height: 46px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      box-shadow: 0 8px 18px rgba(16, 35, 63, .07);
-    }
-
-    .tab {
-      border: 0;
-      border-right: 1px solid var(--line);
-      background: transparent;
-      color: var(--muted);
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .tab:last-child { border-right: 0; }
-
-    .tab[aria-pressed="true"] {
-      background: var(--navy);
-      color: #fff;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 26px 0 12px;
-    }
-
-    .section-title h2 {
-      margin: 0;
-      font-size: 21px;
-      line-height: 1.2;
-      letter-spacing: 0;
-    }
-
-    .section-title p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-      text-align: right;
-    }
-
-    .cards, .notes {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .pick-card, .game-card, .note-card, .standings-card, .result-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .pick-card, .note-card, .result-card {
-      min-height: 142px;
-      padding: 16px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 42px;
-      height: 28px;
-      padding: 0 9px;
-      border-radius: 999px;
-      background: #e8eef8;
-      color: var(--navy);
-      font-size: 12px;
-      font-weight: 950;
-    }
-
-    .pill.win { background: #dff5ed; color: var(--green); }
-    .pill.one { background: #fff2d8; color: var(--amber); }
-    .pill.loss { background: #ffe5e9; color: #b42334; }
-    .pill.info { background: #e8eef8; color: var(--blue); }
-
-    .pick-card h3, .note-card h3, .result-card h3 {
-      margin: 12px 0 8px;
-      font-size: 18px;
-      line-height: 1.25;
-      letter-spacing: 0;
-    }
-
-    .pick-card p, .note-card p, .result-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-      font-weight: 700;
-    }
-
-    .game-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .game-card { overflow: hidden; }
-
-    .game-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 13px 14px;
-      border-bottom: 1px solid #edf1f6;
-      background: #f8fafc;
-    }
-
-    .teams {
-      min-width: 0;
-      font-weight: 950;
-      line-height: 1.35;
-    }
-
-    .teams small {
-      display: block;
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .game-body {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      padding: 14px;
-    }
-
-    .datum span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .datum strong {
-      display: block;
-      margin-top: 4px;
-      font-size: 15px;
-      line-height: 1.25;
-    }
-
-    .prob {
-      color: var(--green);
-      font-size: 18px;
-      font-weight: 950;
-    }
-
-    .result-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .result-row {
-      display: grid;
-      grid-template-columns: 160px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      min-height: 64px;
-      padding: 13px 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      box-shadow: 0 8px 18px rgba(16, 35, 63, .07);
-      font-weight: 850;
-    }
-
-    .result-row small {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      margin-top: 3px;
-    }
-
-    .standings-card {
-      overflow: hidden;
-      margin-top: 12px;
-    }
-
-    .standings-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      background: #f8fafc;
-    }
-
-    .standings-head h3 {
-      margin: 0;
-      font-size: 17px;
-    }
-
-    .standings-head span {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .table-wrap { overflow-x: auto; }
-
-    table {
-      width: 100%;
-      min-width: 720px;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      height: 48px;
-      padding: 0 12px;
-      border-bottom: 1px solid #edf1f6;
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    tr:last-child td { border-bottom: 0; }
-
-    th {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    td {
-      font-size: 14px;
-      font-weight: 750;
-    }
-
-    .team-col, .rank-col { text-align: left; }
-
-    .rank-col {
-      width: 54px;
-      color: var(--muted);
-    }
-
-    .team-cell {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 220px;
-    }
-
-    .abbr {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 28px;
-      border-radius: 6px;
-      background: var(--navy);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 950;
-    }
-
-    .team-ko {
-      display: block;
-      color: var(--ink);
-      font-size: 15px;
-      line-height: 1.15;
-    }
-
-    .team-en {
-      display: block;
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 650;
-    }
-
-    .empty, .error {
-      padding: 24px 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      color: var(--muted);
-      text-align: center;
-      box-shadow: var(--shadow);
-    }
-
-    .error { color: #b42334; }
-
-    @media (max-width: 860px) {
-      body {
-        background:
-          linear-gradient(180deg, rgba(16, 35, 63, .98) 0, rgba(16, 35, 63, .98) 500px, transparent 500px),
-          var(--bg);
-      }
-
-      .topbar { display: block; }
-      .updated { margin-top: 14px; }
-      .sport-tabs, .view-tabs, .summary { grid-template-columns: 1fr; }
-      .toolbar { grid-template-columns: 1fr; }
-      .cards, .game-grid, .notes { grid-template-columns: 1fr; }
-      .section-title { display: block; }
-      .section-title p { margin-top: 5px; text-align: left; }
-      .game-body { grid-template-columns: 1fr 1fr; }
-      .result-row { grid-template-columns: 1fr; align-items: start; }
-    }
-
-    @media (max-width: 520px) {
-      .app { padding-inline: 12px; }
-      .brand { align-items: flex-start; }
-      .mark {
-        width: 42px;
-        height: 42px;
-        flex-basis: 42px;
-        font-size: 17px;
-      }
-      .metric { padding: 13px; min-height: 88px; }
-      .metric strong { font-size: 19px; }
-      .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .tab { min-height: 42px; border-bottom: 1px solid var(--line); }
-      .tab:nth-child(2) { border-right: 0; }
-      .tab:nth-child(3), .tab:nth-child(4) { border-bottom: 0; }
-    }
+    body { margin: 0; background: var(--bg); color: var(--ink);
+      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Segoe UI", sans-serif; }
+    button, input, textarea { font: inherit; color: inherit; }
+    .app { width: min(720px, 100%); margin: 0 auto; padding: 24px 16px 48px; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    header img { width: 44px; height: 44px; border-radius: 10px; }
+    h1 { margin: 0; font-size: 24px; }
+    header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+    h2 { margin: 0 0 12px; font-size: 16px; }
+    textarea { width: 100%; min-height: 140px; resize: vertical; padding: 12px; border: 1px solid var(--line);
+      border-radius: 10px; background: transparent; line-height: 1.5; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+    input[type="datetime-local"] { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: transparent; }
+    .count { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .count.over { color: var(--bad); font-weight: 700; }
+    .btn { min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-weight: 600; }
+    .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    pre { margin: 10px 0 0; padding: 12px; border-radius: 10px; background: var(--bg); overflow-x: auto; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+    .hint { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .hint a { color: inherit; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 13px; }
+    .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { padding: 12px 0; border-top: 1px solid var(--line); }
+    li:first-child { border-top: 0; }
+    .meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .badge { padding: 2px 8px; border-radius: 999px; font-weight: 700; border: 1px solid currentColor; }
+    .pending { color: var(--warn); } .published { color: var(--ok); } .failed { color: var(--bad); }
+    .text { white-space: pre-wrap; line-height: 1.5; font-size: 14px; }
+    .err { color: var(--bad); font-size: 12px; margin-top: 4px; }
+    .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
   </style>
 </head>
 <body>
   <main class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="mark" aria-hidden="true">MLB</div>
-        <div>
-          <h1>스포츠 승률 분석</h1>
-          <p class="subtitle">야구와 축구, 해외와 국내 리그 예측을 한 화면에서 전환해 봅니다.</p>
-        </div>
+    <header>
+      <img src="./icon-512.png" alt="" />
+      <div>
+        <h1>쓰레드 자동화</h1>
+        <p>예약한 글을 GitHub Actions가 15분마다 확인해 Threads에 게시해요.</p>
       </div>
-      <div class="updated">2026-07-09 KST 분석</div>
     </header>
 
-    <p class="notice">MLB는 매일 오후 8시, KBO는 오후 2시, 해외축구는 오후 6시, K리그는 경기일 오전 10시(KST)에 예측을 업데이트합니다. 지난 경기 결과는 종목별 종료 시간 이후 반영됩니다.</p>
-    <p class="schedule-copy">분석 참고용이며 베팅 보장이 아닙니다. 선발 라인업, 부상자, 경기 직전 선발 투수 변경에 따라 신뢰도는 달라질 수 있습니다.</p>
-
-    <nav class="sport-tabs" aria-label="종목 선택">
-      <button class="sport-tab" type="button" data-sport="baseball" aria-pressed="true">해외야구 MLB</button>
-      <button class="sport-tab" type="button" data-sport="soccer" aria-pressed="false">해외축구</button>
-      <button class="sport-tab" type="button" data-sport="kbo" aria-pressed="false">국내야구 KBO</button>
-      <button class="sport-tab" type="button" data-sport="kleague" aria-pressed="false">국내축구 K리그</button>
-    </nav>
-
-    <nav class="view-tabs baseball-view" aria-label="MLB 분석 화면 선택">
-      <button class="view-tab" type="button" data-view="today" aria-pressed="true">오늘 경기 승률 보기</button>
-      <button class="view-tab" type="button" data-view="results" aria-pressed="false">지난 경기 결과 보기</button>
-      <button class="view-tab" type="button" data-view="schedule" aria-pressed="false">경기 일정과 승률 보기</button>
-    </nav>
-
-    <section class="view baseball-view active" id="view-today">
-      <section class="summary" aria-label="오늘 요약">
-        <div class="metric">
-          <span>오늘 경기 수</span>
-          <strong>13경기</strong>
-          <small>홈팀 기준 승/1/패</small>
-        </div>
-        <div class="metric">
-          <span>최고 홈 승 픽</span>
-          <strong>디트로이트</strong>
-          <small>홈 승 79.9%</small>
-        </div>
-        <div class="metric">
-          <span>최고 1 픽</span>
-          <strong>클리블랜드 @ 미네소타</strong>
-          <small>1점차 이내 37.6%</small>
-        </div>
-        <div class="metric">
-          <span>최고 패 픽</span>
-          <strong>필라델피아 @ 신시내티</strong>
-          <small>홈 2점차 이상 패 61.3%</small>
-        </div>
-      </section>
-
-      <section class="section-title">
-        <h2>가장 확률 높은 승/1/패 픽</h2>
-        <p>홈팀 기준: 승 = 홈 2점차 이상 승, 1 = 1점차 이내, 패 = 홈 2점차 이상 패</p>
-      </section>
-      <section class="cards" id="topPicks"></section>
-
-      <section class="section-title">
-        <h2>오늘 경기 전체 픽</h2>
-        <p>팀명 검색과 픽 필터로 빠르게 확인</p>
-      </section>
-      <section class="toolbar" aria-label="경기 필터">
-        <input class="search" id="search" type="search" placeholder="팀명 검색: 양키스, 디트로이트, Phillies..." autocomplete="off" />
-        <div class="tabs" role="group" aria-label="픽 선택">
-          <button class="tab" type="button" data-pick="all" aria-pressed="true">전체</button>
-          <button class="tab" type="button" data-pick="승" aria-pressed="false">승</button>
-          <button class="tab" type="button" data-pick="1" aria-pressed="false">1</button>
-          <button class="tab" type="button" data-pick="패" aria-pressed="false">패</button>
-        </div>
-      </section>
-      <section class="game-grid" id="games" aria-live="polite"></section>
-
-      <section class="section-title">
-        <h2>승률 62% 이상 팀</h2>
-        <p>일반 승리확률 기준</p>
-      </section>
-      <section class="cards" id="strongTeams"></section>
-
-      <section class="section-title">
-        <h2>주의해서 볼 경기</h2>
-        <p>구장, 날씨, 불펜, 부상 변수</p>
-      </section>
-      <section class="notes" id="notes"></section>
+    <section class="card">
+      <h2>새 글 예약</h2>
+      <textarea id="text" placeholder="Threads에 올릴 글을 입력하세요"></textarea>
+      <div class="row">
+        <input id="at" type="datetime-local" aria-label="게시 시간" />
+        <span id="count" class="count">0 / 500</span>
+      </div>
+      <div class="row">
+        <button id="copy" class="btn primary" disabled>예약 항목 복사</button>
+        <a class="btn" id="edit" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit">queue.json 편집 열기</a>
+      </div>
+      <pre id="out" hidden></pre>
+      <p class="hint">복사한 항목을 <code>posts/queue.json</code>의 <code>posts</code> 배열에 붙여 넣고 커밋하면 예약돼요. 시간은 한국 시간(KST) 기준이에요.</p>
     </section>
 
-    <section class="view baseball-view" id="view-results">
-      <section class="summary" aria-label="지난 경기 결과 요약">
-        <div class="metric">
-          <span>최종 경기</span>
-          <strong>15경기</strong>
-          <small>2026-07-08 결과 반영</small>
-        </div>
-        <div class="metric">
-          <span>일반 승리팀 적중률</span>
-          <strong>73.3%</strong>
-          <small>11 / 15</small>
-        </div>
-        <div class="metric">
-          <span>승/1/패 적중률</span>
-          <strong>46.7%</strong>
-          <small>7 / 15</small>
-        </div>
-        <div class="metric">
-          <span>모델 지표</span>
-          <strong>Brier 0.183</strong>
-          <small>평균 스코어 오차 6.07</small>
-        </div>
-      </section>
-
-      <section class="section-title">
-        <h2>지난 경기 결과</h2>
-        <p>매일 오후 3시 30분(KST) 이후 최종 반영</p>
-      </section>
-      <section class="result-list" id="results"></section>
-    </section>
-
-    <section class="view baseball-view" id="view-schedule">
-      <section class="summary" aria-label="앞으로 경기 일정 요약">
-        <div class="metric">
-          <span>예측 업데이트</span>
-          <strong>20:00 KST</strong>
-          <small>다음 경기 기준</small>
-        </div>
-        <div class="metric">
-          <span>결과 반영</span>
-          <strong>15:30 KST</strong>
-          <small>전일 경기 완료 후</small>
-        </div>
-        <div class="metric">
-          <span>가장 이른 시작</span>
-          <strong>01:35 KST</strong>
-          <small>2026-07-10 기준</small>
-        </div>
-        <div class="metric">
-          <span>늦은 종료 예상</span>
-          <strong>14:00 전후</strong>
-          <small>서부 경기 포함 시</small>
-        </div>
-      </section>
-
-      <section class="section-title">
-        <h2>경기 일정과 승률</h2>
-        <p>한국 시간 기준, 예비 분석</p>
-      </section>
-      <section class="game-grid" id="scheduleGames"></section>
-
-      <section class="section-title">
-        <h2>실시간 시즌 승률표</h2>
-        <p>MLB 공식 Stats API 기준, 팀명 한글 표시</p>
-      </section>
-      <section id="standingsStatus" class="empty">MLB 시즌 승률표를 불러오는 중...</section>
-      <section id="standings"></section>
-    </section>
-
-    <section class="view" id="view-soccer">
-      <section class="summary" aria-label="해외축구 요약">
-        <div class="metric">
-          <span>축구 예측 업데이트</span>
-          <strong>18:00 KST</strong>
-          <small>유럽 주요 경기 전</small>
-        </div>
-        <div class="metric">
-          <span>축구 결과 반영</span>
-          <strong>08:30 KST</strong>
-          <small>새벽 경기 종료 후</small>
-        </div>
-        <div class="metric">
-          <span>예측 방식</span>
-          <strong>홈승/무/원정승</strong>
-          <small>승무패 기준</small>
-        </div>
-        <div class="metric">
-          <span>1차 지원 리그</span>
-          <strong>EPL · 라리가 · UCL</strong>
-          <small>이후 세리에A/분데스리가 확장</small>
-        </div>
-      </section>
-
-      <section class="section-title">
-        <h2>오늘 축구 승률 보기</h2>
-        <p>주요 해외축구 경기 승무패 예측</p>
-      </section>
-      <section class="cards" id="soccerTopPicks"></section>
-
-      <section class="section-title">
-        <h2>축구 일정과 승률 보기</h2>
-        <p>한국 시간 기준, 홈승/무/원정승</p>
-      </section>
-      <section class="game-grid" id="soccerFixtures"></section>
-
-      <section class="section-title">
-        <h2>지난 축구 결과 보기</h2>
-        <p>승무패 적중률과 주요 픽 결과</p>
-      </section>
-      <section class="result-list" id="soccerResults"></section>
-
-      <section class="section-title">
-        <h2>축구 주의 변수</h2>
-        <p>부상, 로테이션, 원정 거리, 일정 과밀</p>
-      </section>
-      <section class="notes" id="soccerNotes"></section>
-    </section>
-
-    <section class="view" id="view-kbo">
-      <section class="summary" aria-label="KBO 요약">
-        <div class="metric">
-          <span>KBO 예측 업데이트</span>
-          <strong>14:00 KST</strong>
-          <small>경기일 기본 분석</small>
-        </div>
-        <div class="metric">
-          <span>KBO 최종 점검</span>
-          <strong>경기 1시간 전</strong>
-          <small>라인업/선발 재확인</small>
-        </div>
-        <div class="metric">
-          <span>KBO 결과 반영</span>
-          <strong>23:00 KST</strong>
-          <small>경기 종료 후 적중률</small>
-        </div>
-        <div class="metric">
-          <span>예측 방식</span>
-          <strong>승 / 1 / 패</strong>
-          <small>홈팀 기준</small>
-        </div>
-      </section>
-
-      <section class="section-title">
-        <h2>오늘 KBO 승률 보기</h2>
-        <p>선발투수, 최근 흐름, 불펜 피로도 중심</p>
-      </section>
-      <section class="game-grid" id="kboFixtures"></section>
-
-      <section class="section-title">
-        <h2>지난 KBO 결과 보기</h2>
-        <p>승/1/패 적중률과 주요 픽 결과</p>
-      </section>
-      <section class="result-list" id="kboResults"></section>
-
-      <section class="section-title">
-        <h2>KBO 주의 변수</h2>
-        <p>선발, 불펜, 구장, 날씨</p>
-      </section>
-      <section class="notes" id="kboNotes"></section>
-    </section>
-
-    <section class="view" id="view-kleague">
-      <section class="summary" aria-label="K리그 요약">
-        <div class="metric">
-          <span>K리그 예측 업데이트</span>
-          <strong>10:00 KST</strong>
-          <small>경기일 오전 분석</small>
-        </div>
-        <div class="metric">
-          <span>K리그 최종 점검</span>
-          <strong>첫 경기 1시간 전</strong>
-          <small>라인업/결장 확인</small>
-        </div>
-        <div class="metric">
-          <span>K리그 결과 반영</span>
-          <strong>22:30 KST</strong>
-          <small>늦은 경기 종료 후</small>
-        </div>
-        <div class="metric">
-          <span>예측 방식</span>
-          <strong>홈승 / 무 / 원정승</strong>
-          <small>승무패 기준</small>
-        </div>
-      </section>
-
-      <section class="section-title">
-        <h2>오늘 K리그 승률 보기</h2>
-        <p>홈/원정 성적, 최근 흐름, 결장 변수 중심</p>
-      </section>
-      <section class="game-grid" id="kleagueFixtures"></section>
-
-      <section class="section-title">
-        <h2>지난 K리그 결과 보기</h2>
-        <p>승무패 적중률과 주요 픽 결과</p>
-      </section>
-      <section class="result-list" id="kleagueResults"></section>
-
-      <section class="section-title">
-        <h2>K리그 주의 변수</h2>
-        <p>부상, 징계, 일정 과밀, ACL 병행</p>
-      </section>
-      <section class="notes" id="kleagueNotes"></section>
+    <section class="card">
+      <h2>예약 목록</h2>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-f="pending" aria-selected="true">대기</button>
+        <button class="tab" role="tab" data-f="published" aria-selected="false">게시됨</button>
+        <button class="tab" role="tab" data-f="failed" aria-selected="false">실패</button>
+      </div>
+      <ul id="list"><li class="empty">불러오는 중…</li></ul>
     </section>
   </main>
 
   <script>
-    const games = [
-      { startKst: "07/10 01:35", awayKo: "애틀랜타 브레이브스", awayEn: "Atlanta Braves", homeKo: "피츠버그 파이리츠", homeEn: "Pittsburgh Pirates", pick: "패", pickProb: 38.2, favoriteKo: "애틀랜타", winProb: 55.8, score: "애틀랜타 7 - 6 피츠버그", confidence: "낮음", reason: "선발 ERA 우위, 실점 억제력 우위" },
-      { startKst: "07/10 02:10", awayKo: "캔자스시티 로열스", awayEn: "Kansas City Royals", homeKo: "뉴욕 메츠", homeEn: "New York Mets", pick: "패", pickProb: 48.9, favoriteKo: "캔자스시티", winProb: 66.2, score: "캔자스시티 6 - 5 뉴욕 메츠", confidence: "높음", reason: "선발 ERA 우위, 상대 불펜 피로" },
-      { startKst: "07/10 02:10", awayKo: "뉴욕 양키스", awayEn: "New York Yankees", homeKo: "탬파베이 레이스", homeEn: "Tampa Bay Rays", pick: "승", pickProb: 50.2, favoriteKo: "탬파베이", winProb: 72.0, score: "뉴욕 양키스 3 - 4 탬파베이", confidence: "높음", reason: "홈 이점, 최근 타선 흐름" },
-      { startKst: "07/10 02:40", awayKo: "클리블랜드 가디언스", awayEn: "Cleveland Guardians", homeKo: "미네소타 트윈스", homeEn: "Minnesota Twins", pick: "1", pickProb: 37.6, favoriteKo: "클리블랜드", winProb: 50.0, score: "클리블랜드 6 - 5 미네소타", confidence: "낮음", reason: "양 팀 승률 균형, 접전 가능성" },
-      { startKst: "07/10 03:10", awayKo: "보스턴 레드삭스", awayEn: "Boston Red Sox", homeKo: "시카고 화이트삭스", homeEn: "Chicago White Sox", pick: "패", pickProb: 43.7, favoriteKo: "보스턴", winProb: 63.4, score: "보스턴 5 - 4 시카고 화이트삭스", confidence: "높음", reason: "최근 타선 우위, 실점 억제력 우위" },
-      { startKst: "07/10 07:35", awayKo: "시카고 컵스", awayEn: "Chicago Cubs", homeKo: "볼티모어 오리올스", homeEn: "Baltimore Orioles", pick: "패", pickProb: 49.1, favoriteKo: "시카고 컵스", winProb: 66.0, score: "시카고 컵스 7 - 5 볼티모어", confidence: "높음", reason: "득점력, 최근 타선, 실점 억제력 우위" },
-      { startKst: "07/10 07:40", awayKo: "애슬레틱스", awayEn: "Athletics", homeKo: "디트로이트 타이거스", homeEn: "Detroit Tigers", pick: "승", pickProb: 79.9, favoriteKo: "디트로이트", winProb: 88.5, score: "애슬레틱스 4 - 8 디트로이트", confidence: "높음", reason: "홈 이점, 최근 타선, 선발 ERA 우위" },
-      { startKst: "07/10 07:40", awayKo: "시애틀 매리너스", awayEn: "Seattle Mariners", homeKo: "마이애미 말린스", homeEn: "Miami Marlins", pick: "패", pickProb: 44.7, favoriteKo: "시애틀", winProb: 65.9, score: "시애틀 4 - 3 마이애미", confidence: "높음", reason: "선발 ERA 우위, 실점 억제력 우위" },
-      { startKst: "07/10 08:10", awayKo: "필라델피아 필리스", awayEn: "Philadelphia Phillies", homeKo: "신시내티 레즈", homeEn: "Cincinnati Reds", pick: "패", pickProb: 61.3, favoriteKo: "필라델피아", winProb: 77.5, score: "필라델피아 6 - 4 신시내티", confidence: "높음", reason: "득점력, 최근 타선, 선발 ERA 우위" },
-      { startKst: "07/10 08:45", awayKo: "밀워키 브루어스", awayEn: "Milwaukee Brewers", homeKo: "세인트루이스 카디널스", homeEn: "St. Louis Cardinals", pick: "패", pickProb: 52.2, favoriteKo: "밀워키", winProb: 72.0, score: "밀워키 5 - 3 세인트루이스", confidence: "높음", reason: "득점력, 선발 ERA 우위, 상대 불펜 피로" },
-      { startKst: "07/10 09:05", awayKo: "LA 에인절스", awayEn: "Los Angeles Angels", homeKo: "텍사스 레인저스", homeEn: "Texas Rangers", pick: "승", pickProb: 58.5, favoriteKo: "텍사스", winProb: 77.1, score: "LA 에인절스 3 - 5 텍사스", confidence: "높음", reason: "홈 이점, 최근 타선, 실점 억제력 우위" },
-      { startKst: "07/10 10:40", awayKo: "애리조나 다이아몬드백스", awayEn: "Arizona Diamondbacks", homeKo: "샌디에이고 파드리스", homeEn: "San Diego Padres", pick: "패", pickProb: 41.2, favoriteKo: "애리조나", winProb: 60.8, score: "애리조나 5 - 4 샌디에이고", confidence: "보통", reason: "득점력, 최근 타선, 선발 ERA 우위" },
-      { startKst: "07/10 10:45", awayKo: "콜로라도 로키스", awayEn: "Colorado Rockies", homeKo: "샌프란시스코 자이언츠", homeEn: "San Francisco Giants", pick: "패", pickProb: 41.5, favoriteKo: "콜로라도", winProb: 59.0, score: "콜로라도 7 - 6 샌프란시스코", confidence: "보통", reason: "득점력과 최근 타선 우위" }
-    ];
+    const REPO = "muse9306legend/myapp";
+    const BRANCH = "main";
+    const STATUS = { pending: "대기", published: "게시됨", failed: "실패" };
+    const $ = (id) => document.getElementById(id);
+    let posts = [];
+    let filter = "pending";
 
-    const topPicks = [
-      { label: "승", className: "win", title: "애슬레틱스 @ 디트로이트", detail: "홈 승 79.9% · 일반 승리확률 디트로이트 88.5%" },
-      { label: "1", className: "one", title: "클리블랜드 @ 미네소타", detail: "1점차 이내 37.6% · 균형 경기라 접전 가능성 높음" },
-      { label: "패", className: "loss", title: "필라델피아 @ 신시내티", detail: "홈 2점차 이상 패 61.3% · 필라델피아 승리확률 77.5%" }
-    ];
+    $("edit").href = `https://github.com/${REPO}/edit/${BRANCH}/posts/queue.json`;
 
-    const strongTeams = [
-      ["디트로이트 타이거스", 88.5], ["필라델피아 필리스", 77.5], ["텍사스 레인저스", 77.1],
-      ["탬파베이 레이스", 72.0], ["밀워키 브루어스", 72.0], ["캔자스시티 로열스", 66.2],
-      ["시카고 컵스", 66.0], ["시애틀 매리너스", 65.9], ["보스턴 레드삭스", 63.4]
-    ];
+    const pad = (n) => String(n).padStart(2, "0");
+    const d = new Date(Date.now() + 60 * 60 * 1000);
+    $("at").value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`;
 
-    const notes = [
-      ["구장/날씨 변수", "필라델피아 @ 신시내티: Great American Ball Park, 91.8F, 환경계수 1.155로 장타와 득점 변동성이 큼."],
-      ["불펜 변수", "밀워키 @ 세인트루이스: 세인트루이스 불펜 최근 3일 16.33이닝, 260구로 피로도가 크게 잡힘."],
-      ["부상/라인업 변수", "양키스 핵심 타선 부상 공백, 미네소타 Bailey Ober·Byron Buxton·Ryan Jeffers 이슈 등은 경기 직전 재확인 필요."]
-    ];
-
-    const soccerTopPicks = [
-      { label: "홈승", className: "win", title: "EPL 주요 경기", detail: "정규 시즌 일정 확인 후 홈승/무/원정승 확률을 표시합니다." },
-      { label: "무", className: "one", title: "접전 후보", detail: "전력 차가 작거나 원정 부담이 큰 경기는 무승부 확률을 따로 강조합니다." },
-      { label: "원정승", className: "loss", title: "원정 우세 경기", detail: "강팀 원정, 부상 공백, 일정 과밀 변수를 같이 반영합니다." }
-    ];
-
-    const soccerFixtures = [
-      { league: "EPL", startKst: "시즌 일정 확인 중", homeKo: "프리미어리그 홈팀", awayKo: "프리미어리그 원정팀", pick: "홈승", homeProb: 44.0, drawProb: 28.0, awayProb: 28.0, score: "예상 스코어 준비 중", confidence: "예비", reason: "7월은 주요 유럽 리그 정규 시즌 전환기라 공식 일정 확정 후 경기별 수치를 채웁니다." },
-      { league: "라리가", startKst: "시즌 일정 확인 중", homeKo: "라리가 홈팀", awayKo: "라리가 원정팀", pick: "무", homeProb: 34.0, drawProb: 32.0, awayProb: 34.0, score: "예상 스코어 준비 중", confidence: "예비", reason: "리그 개막 후 홈/원정 전력, 부상, 로테이션 데이터를 반영합니다." },
-      { league: "챔피언스리그", startKst: "대진 확정 후", homeKo: "UCL 홈팀", awayKo: "UCL 원정팀", pick: "원정승", homeProb: 30.0, drawProb: 26.0, awayProb: 44.0, score: "예상 스코어 준비 중", confidence: "예비", reason: "유럽 대항전은 원정 거리와 일정 과밀 변수를 별도로 표시합니다." }
-    ];
-
-    const soccerResults = [
-      { date: "해외축구", title: "지난 경기 결과", body: "경기 종료 후 오전 8시 30분(KST)에 승무패 적중률을 반영합니다.", badge: "준비", className: "info" },
-      { date: "지표", title: "승무패 적중률", body: "홈승/무/원정승 기준으로 날짜별 결과를 누적합니다.", badge: "예정", className: "one" },
-      { date: "고급 지표", title: "오버/언더, 양팀득점", body: "1차 버전 안정화 후 별도 지표로 추가합니다.", badge: "다음", className: "win" }
-    ];
-
-    const soccerNotes = [
-      ["라인업 변수", "축구는 경기 약 60분 전 선발 명단이 공개되므로 최종 점검 기능을 나중에 붙이는 것이 좋습니다."],
-      ["리그 우선순위", "1차는 EPL, 라리가, 챔피언스리그 중심으로 시작하고 이후 세리에A, 분데스리가, 리그1을 확장합니다."],
-      ["예측 기준", "축구 기본 픽은 홈승/무/원정승입니다. 오버/언더 2.5골과 양팀득점은 고급 지표로 분리합니다."]
-    ];
-
-    const kboFixtures = [
-      { startKst: "경기일 18:30", awayKo: "LG 트윈스", homeKo: "두산 베어스", pick: "1", pickProb: 36.0, favoriteKo: "두산", winProb: 52.0, score: "LG 4 - 5 두산", confidence: "예비", reason: "KBO 데이터 연결 후 선발투수, 최근 타격 흐름, 불펜 피로도를 반영합니다." },
-      { startKst: "경기일 18:30", awayKo: "KIA 타이거즈", homeKo: "삼성 라이온즈", pick: "승", pickProb: 43.0, favoriteKo: "삼성", winProb: 57.0, score: "KIA 3 - 5 삼성", confidence: "예비", reason: "홈팀 기준 승/1/패 구조를 MLB와 동일하게 유지합니다." },
-      { startKst: "경기일 18:30", awayKo: "롯데 자이언츠", homeKo: "SSG 랜더스", pick: "패", pickProb: 41.0, favoriteKo: "롯데", winProb: 55.0, score: "롯데 6 - 4 SSG", confidence: "예비", reason: "구장/날씨와 불펜 사용량을 별도 주의 변수로 표시합니다." }
-    ];
-
-    const kboResults = [
-      { date: "KBO", title: "지난 경기 결과", body: "경기 종료 후 23:00(KST)에 승/1/패 적중률을 반영합니다.", badge: "준비", className: "info" },
-      { date: "지표", title: "일반 승리팀 적중률", body: "승리팀 예측과 홈팀 기준 승/1/패를 따로 누적합니다.", badge: "예정", className: "one" },
-      { date: "백테스트", title: "선발/불펜 변수 검증", body: "KBO는 팀 수가 적어 날짜별 모델 개선을 보기 좋습니다.", badge: "다음", className: "win" }
-    ];
-
-    const kboNotes = [
-      ["선발투수", "KBO는 선발투수 영향이 커서 예측 화면 첫 번째 근거로 보여주는 것이 좋습니다."],
-      ["불펜 피로도", "최근 2~3일 등판 수와 투구 수를 반영하면 접전 예측 품질이 좋아집니다."],
-      ["날씨/구장", "잠실, 문학, 대구, 사직 등 구장 특성과 우천 취소 가능성을 별도로 표시합니다."]
-    ];
-
-    const kLeagueFixtures = [
-      { league: "K리그1", startKst: "경기일 19:00", homeKo: "울산 HD", awayKo: "전북 현대", pick: "홈승", homeProb: 42.0, drawProb: 29.0, awayProb: 29.0, score: "울산 2 - 1 전북", confidence: "예비", reason: "홈/원정 성적, 최근 득실, 결장자 정보를 연결한 뒤 실제 수치를 채웁니다." },
-      { league: "K리그1", startKst: "경기일 19:30", homeKo: "FC서울", awayKo: "수원FC", pick: "무", homeProb: 35.0, drawProb: 31.0, awayProb: 34.0, score: "서울 1 - 1 수원FC", confidence: "예비", reason: "승무패 기본 구조로 해외축구와 같은 화면 흐름을 사용합니다." },
-      { league: "K리그2", startKst: "경기일 16:30", homeKo: "부산 아이파크", awayKo: "전남 드래곤즈", pick: "원정승", homeProb: 30.0, drawProb: 28.0, awayProb: 42.0, score: "부산 1 - 2 전남", confidence: "예비", reason: "K리그2는 리그 필터로 분리해서 확장할 수 있습니다." }
-    ];
-
-    const kLeagueResults = [
-      { date: "K리그", title: "지난 경기 결과", body: "경기일 22:30(KST)에 승무패 적중률을 반영합니다.", badge: "준비", className: "info" },
-      { date: "지표", title: "홈승/무/원정승 적중률", body: "축구는 무승부 예측을 별도 지표로 관리합니다.", badge: "예정", className: "one" },
-      { date: "확장", title: "오버/언더와 양팀득점", body: "1차 승무패 구조 안정화 후 고급 지표로 추가합니다.", badge: "다음", className: "win" }
-    ];
-
-    const kLeagueNotes = [
-      ["결장/징계", "퇴장 누적, 부상, 대표팀 차출은 K리그 예측에서 크게 작용합니다."],
-      ["일정 과밀", "FA컵, ACL, 원정 연전이 겹치는 팀은 체력 변수를 표시합니다."],
-      ["홈/원정 성적", "K리그는 홈/원정 편차와 최근 득실 흐름을 함께 보는 구성이 좋습니다."]
-    ];
-
-    const results = [
-      { date: "2026-07-08", title: "일반 승리팀 픽", body: "73.3% 적중 · 11/15", badge: "적중 우수", className: "win" },
-      { date: "2026-07-08", title: "승/1/패 픽", body: "46.7% 적중 · 7/15", badge: "보완 필요", className: "one" },
-      { date: "맞은 주요 픽", title: "디트로이트, LA 다저스, 워싱턴, 뉴욕 메츠", body: "홈팀 기준 승/1/패 주요 적중", badge: "맞음", className: "win" },
-      { date: "틀린 주요 픽", title: "샌프란시스코 1→패, 볼티모어 1→패, 텍사스 승→패", body: "접전/강팀 경기에서 오차 발생", badge: "검토", className: "loss" }
-    ];
-
-    const teamKoById = {
-      108: "LA 에인절스", 109: "애리조나 다이아몬드백스", 110: "볼티모어 오리올스",
-      111: "보스턴 레드삭스", 112: "시카고 컵스", 113: "신시내티 레즈",
-      114: "클리블랜드 가디언스", 115: "콜로라도 로키스", 116: "디트로이트 타이거스",
-      117: "휴스턴 애스트로스", 118: "캔자스시티 로열스", 119: "LA 다저스",
-      120: "워싱턴 내셔널스", 121: "뉴욕 메츠", 133: "애슬레틱스",
-      134: "피츠버그 파이리츠", 135: "샌디에이고 파드리스", 136: "시애틀 매리너스",
-      137: "샌프란시스코 자이언츠", 138: "세인트루이스 카디널스", 139: "탬파베이 레이스",
-      140: "텍사스 레인저스", 141: "토론토 블루제이스", 142: "미네소타 트윈스",
-      143: "필라델피아 필리스", 144: "애틀랜타 브레이브스", 145: "시카고 화이트삭스",
-      146: "마이애미 말린스", 147: "뉴욕 양키스", 158: "밀워키 브루어스"
-    };
-
-    const leagueKo = { 103: "아메리칸 리그", 104: "내셔널 리그" };
-    const divisionKo = { 200: "서부지구", 201: "동부지구", 202: "중부지구", 203: "서부지구", 204: "동부지구", 205: "중부지구" };
-    const state = { query: "", pick: "all" };
-
-    function normalize(text) {
-      return String(text || "").toLowerCase().replace(/\s+/g, "");
+    function entry() {
+      return { at: `${$("at").value}:00+09:00`, text: $("text").value.trim(), status: "pending" };
     }
 
-    function pickClass(pick) {
-      if (pick === "승") return "win";
-      if (pick === "1") return "one";
-      return "loss";
+    function update() {
+      const len = [...$("text").value.trim()].length;
+      $("count").textContent = `${len} / 500`;
+      $("count").classList.toggle("over", len > 500);
+      $("copy").disabled = !len || len > 500 || !$("at").value;
+      $("out").hidden = !len;
+      $("out").textContent = JSON.stringify(entry(), null, 2) + ",";
     }
+    $("text").addEventListener("input", update);
+    $("at").addEventListener("input", update);
 
-    function gameCard(game, showTime) {
-      return `
-        <article class="game-card">
-          <div class="game-head">
-            <div class="teams">
-              ${showTime ? `<span class="pill info">${game.startKst}</span><br>` : ""}
-              ${game.awayKo} @ ${game.homeKo}
-              <small>${game.awayEn} @ ${game.homeEn}</small>
-            </div>
-            <span class="pill ${pickClass(game.pick)}">${game.pick}</span>
-          </div>
-          <div class="game-body">
-            <div class="datum"><span>픽 확률</span><strong class="prob">${game.pickProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>승리 우세</span><strong>${game.favoriteKo} ${game.winProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>예상 스코어</span><strong>${game.score}</strong></div>
-            <div class="datum"><span>신뢰도</span><strong>${game.confidence}</strong></div>
-            <div class="datum" style="grid-column: span 2;"><span>근거</span><strong>${game.reason}</strong></div>
-          </div>
-        </article>
-      `;
-    }
-
-    function renderTopPicks() {
-      document.getElementById("topPicks").innerHTML = topPicks.map((item) => `
-        <article class="pick-card">
-          <span class="pill ${item.className}">${item.label}</span>
-          <h3>${item.title}</h3>
-          <p>${item.detail}</p>
-        </article>
-      `).join("");
-    }
-
-    function renderGames() {
-      const query = normalize(state.query);
-      const filtered = games.filter((game) => {
-        const text = normalize(`${game.awayKo} ${game.awayEn} ${game.homeKo} ${game.homeEn} ${game.favoriteKo}`);
-        const pickOk = state.pick === "all" || game.pick === state.pick;
-        return pickOk && (!query || text.includes(query));
-      });
-      document.getElementById("games").innerHTML = filtered.length
-        ? filtered.map((game) => gameCard(game, false)).join("")
-        : `<div class="empty">조건에 맞는 경기가 없습니다.</div>`;
-    }
-
-    function renderScheduleGames() {
-      document.getElementById("scheduleGames").innerHTML = games.map((game) => gameCard(game, true)).join("");
-    }
-
-    function renderStrongTeams() {
-      document.getElementById("strongTeams").innerHTML = strongTeams.map(([team, probability]) => `
-        <article class="pick-card">
-          <span class="pill win">${probability.toFixed(1)}%</span>
-          <h3>${team}</h3>
-          <p>일반 승리확률 62% 이상 구간</p>
-        </article>
-      `).join("");
-    }
-
-    function renderNotes() {
-      document.getElementById("notes").innerHTML = notes.map(([title, body]) => `
-        <article class="note-card">
-          <h3>${title}</h3>
-          <p>${body}</p>
-        </article>
-      `).join("");
-    }
-
-    function renderSoccer() {
-      document.getElementById("soccerTopPicks").innerHTML = soccerTopPicks.map((item) => `
-        <article class="pick-card">
-          <span class="pill ${item.className}">${item.label}</span>
-          <h3>${item.title}</h3>
-          <p>${item.detail}</p>
-        </article>
-      `).join("");
-
-      document.getElementById("soccerFixtures").innerHTML = soccerFixtures.map((game) => `
-        <article class="game-card">
-          <div class="game-head">
-            <div class="teams">
-              <span class="pill info">${game.league}</span>
-              <span class="pill info">${game.startKst}</span><br>
-              ${game.homeKo} vs ${game.awayKo}
-              <small>홈승/무/원정승 예측</small>
-            </div>
-            <span class="pill ${game.pick === "홈승" ? "win" : game.pick === "무" ? "one" : "loss"}">${game.pick}</span>
-          </div>
-          <div class="game-body">
-            <div class="datum"><span>홈승</span><strong class="prob">${game.homeProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>무승부</span><strong>${game.drawProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>원정승</span><strong>${game.awayProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>예상 스코어</span><strong>${game.score}</strong></div>
-            <div class="datum"><span>신뢰도</span><strong>${game.confidence}</strong></div>
-            <div class="datum"><span>근거</span><strong>${game.reason}</strong></div>
-          </div>
-        </article>
-      `).join("");
-
-      document.getElementById("soccerResults").innerHTML = soccerResults.map((item) => `
-        <article class="result-row">
-          <div>${item.date}</div>
-          <div>${item.title}<small>${item.body}</small></div>
-          <span class="pill ${item.className}">${item.badge}</span>
-        </article>
-      `).join("");
-
-      document.getElementById("soccerNotes").innerHTML = soccerNotes.map(([title, body]) => `
-        <article class="note-card">
-          <h3>${title}</h3>
-          <p>${body}</p>
-        </article>
-      `).join("");
-    }
-
-    function renderKbo() {
-      document.getElementById("kboFixtures").innerHTML = kboFixtures.map((game) => gameCard(game, true)).join("");
-      document.getElementById("kboResults").innerHTML = kboResults.map((item) => `
-        <article class="result-row">
-          <div>${item.date}</div>
-          <div>${item.title}<small>${item.body}</small></div>
-          <span class="pill ${item.className}">${item.badge}</span>
-        </article>
-      `).join("");
-      document.getElementById("kboNotes").innerHTML = kboNotes.map(([title, body]) => `
-        <article class="note-card">
-          <h3>${title}</h3>
-          <p>${body}</p>
-        </article>
-      `).join("");
-    }
-
-    function renderKLeague() {
-      document.getElementById("kleagueFixtures").innerHTML = kLeagueFixtures.map((game) => `
-        <article class="game-card">
-          <div class="game-head">
-            <div class="teams">
-              <span class="pill info">${game.league}</span>
-              <span class="pill info">${game.startKst}</span><br>
-              ${game.homeKo} vs ${game.awayKo}
-              <small>홈승/무/원정승 예측</small>
-            </div>
-            <span class="pill ${game.pick === "홈승" ? "win" : game.pick === "무" ? "one" : "loss"}">${game.pick}</span>
-          </div>
-          <div class="game-body">
-            <div class="datum"><span>홈승</span><strong class="prob">${game.homeProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>무승부</span><strong>${game.drawProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>원정승</span><strong>${game.awayProb.toFixed(1)}%</strong></div>
-            <div class="datum"><span>예상 스코어</span><strong>${game.score}</strong></div>
-            <div class="datum"><span>신뢰도</span><strong>${game.confidence}</strong></div>
-            <div class="datum"><span>근거</span><strong>${game.reason}</strong></div>
-          </div>
-        </article>
-      `).join("");
-      document.getElementById("kleagueResults").innerHTML = kLeagueResults.map((item) => `
-        <article class="result-row">
-          <div>${item.date}</div>
-          <div>${item.title}<small>${item.body}</small></div>
-          <span class="pill ${item.className}">${item.badge}</span>
-        </article>
-      `).join("");
-      document.getElementById("kleagueNotes").innerHTML = kLeagueNotes.map(([title, body]) => `
-        <article class="note-card">
-          <h3>${title}</h3>
-          <p>${body}</p>
-        </article>
-      `).join("");
-    }
-
-    function renderResults() {
-      document.getElementById("results").innerHTML = results.map((item) => `
-        <article class="result-row">
-          <div>${item.date}</div>
-          <div>${item.title}<small>${item.body}</small></div>
-          <span class="pill ${item.className}">${item.badge}</span>
-        </article>
-      `).join("");
-    }
-
-    function pctText(value) {
-      const number = Number(value);
-      if (!Number.isFinite(number)) return "-";
-      return `${(number * 100).toFixed(1)}%`;
-    }
-
-    function renderStandings(records) {
-      const status = document.getElementById("standingsStatus");
-      if (status) status.remove();
-      document.getElementById("standings").innerHTML = records.map((record) => {
-        const leagueName = leagueKo[record.league.id] || record.league.name;
-        const divisionName = divisionKo[record.division.id] || record.division.name;
-        const teams = record.teamRecords.map((teamRecord) => ({
-          id: teamRecord.team.id,
-          ko: teamKoById[teamRecord.team.id] || teamRecord.team.name,
-          en: teamRecord.team.name,
-          abbr: teamRecord.team.abbreviation || teamRecord.team.teamName.slice(0, 3).toUpperCase(),
-          wins: Number(teamRecord.wins),
-          losses: Number(teamRecord.losses),
-          pct: Number(teamRecord.winningPercentage),
-          gamesBack: teamRecord.gamesBack,
-          streak: teamRecord.streak?.streakCode || "-",
-          lastTen: teamRecord.records?.splitRecords?.find((item) => item.type === "lastTen")
-        })).sort((a, b) => b.pct - a.pct || b.wins - a.wins);
-
-        return `
-          <article class="standings-card">
-            <div class="standings-head"><h3>${leagueName} ${divisionName}</h3><span>${teams.length}팀</span></div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th class="rank-col">순위</th><th class="team-col">팀</th><th>승</th><th>패</th><th>승률</th><th>게임차</th><th>최근 10경기</th><th>연속</th></tr>
-                </thead>
-                <tbody>
-                  ${teams.map((team, index) => `
-                    <tr>
-                      <td class="rank-col">${index + 1}</td>
-                      <td class="team-col">
-                        <div class="team-cell"><span class="abbr">${team.abbr}</span><span><span class="team-ko">${team.ko}</span><span class="team-en">${team.en}</span></span></div>
-                      </td>
-                      <td>${team.wins}</td><td>${team.losses}</td><td class="prob">${pctText(team.pct)}</td><td>${team.gamesBack}</td>
-                      <td>${team.lastTen ? `${team.lastTen.wins}승 ${team.lastTen.losses}패` : "-"}</td><td>${team.streak}</td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            </div>
-          </article>
-        `;
-      }).join("");
-    }
-
-    async function loadStandings() {
+    $("copy").addEventListener("click", async () => {
       try {
-        const season = new Date().getFullYear();
-        const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${season}&standingsTypes=regularSeason`;
-        const response = await fetch(url, { cache: "no-store" });
-        if (!response.ok) throw new Error(`MLB API ${response.status}`);
-        const data = await response.json();
-        renderStandings(data.records || []);
-      } catch (error) {
-        console.error(error);
-        const status = document.getElementById("standingsStatus");
-        if (status) {
-          status.className = "error";
-          status.textContent = "MLB 시즌 승률표를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.";
+        await navigator.clipboard.writeText($("out").textContent);
+        $("copy").textContent = "복사됨 ✓";
+      } catch {
+        $("copy").textContent = "복사 실패 – 아래 내용을 직접 복사하세요";
+      }
+      setTimeout(() => ($("copy").textContent = "예약 항목 복사"), 1800);
+    });
+
+    document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
+      filter = t.dataset.f;
+      document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", String(x === t)));
+      render();
+    }));
+
+    const fmt = (iso) => new Date(iso).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" });
+
+    function render() {
+      const list = $("list");
+      const items = posts.filter((p) => p.status === filter)
+        .sort((a, b) => (filter === "pending" ? 1 : -1) * (Date.parse(a.at) - Date.parse(b.at)));
+      list.replaceChildren();
+      if (!items.length) {
+        list.innerHTML = '<li class="empty">항목이 없어요.</li>';
+        return;
+      }
+      for (const p of items) {
+        const li = document.createElement("li");
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const badge = document.createElement("span");
+        badge.className = `badge ${p.status}`;
+        badge.textContent = STATUS[p.status] || p.status;
+        const when = document.createElement("span");
+        when.textContent = fmt(p.published_at || p.at);
+        meta.append(badge, when);
+        if (p.permalink) {
+          const a = document.createElement("a");
+          a.href = p.permalink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Threads에서 보기";
+          a.style.color = "inherit";
+          meta.append(a);
         }
+        const text = document.createElement("div");
+        text.className = "text";
+        text.textContent = p.text;
+        li.append(meta, text);
+        if (p.error) {
+          const e = document.createElement("div");
+          e.className = "err";
+          e.textContent = p.error;
+          li.append(e);
+        }
+        list.append(li);
       }
     }
 
-    document.querySelectorAll(".sport-tab").forEach((button) => {
-      button.addEventListener("click", () => {
-        const sport = button.dataset.sport;
-        const isBaseball = sport === "baseball";
-        document.querySelectorAll(".sport-tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
-        document.querySelectorAll(".baseball-view").forEach((item) => item.classList.toggle("sport-hidden", !isBaseball));
-        ["soccer", "kbo", "kleague"].forEach((name) => {
-          document.getElementById(`view-${name}`).classList.toggle("active", sport === name);
-        });
-        if (isBaseball && !document.querySelector(".baseball-view.view.active")) {
-          document.getElementById("view-today").classList.add("active");
-        }
-      });
-    });
+    fetch("./posts/queue.json", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((q) => { posts = q.posts || []; render(); })
+      .catch(() => { $("list").innerHTML = '<li class="empty">queue.json을 불러오지 못했어요.</li>'; });
 
-    document.querySelectorAll(".view-tab").forEach((button) => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".view-tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
-        document.querySelectorAll(".baseball-view.view").forEach((view) => view.classList.toggle("active", view.id === `view-${button.dataset.view}`));
-      });
-    });
-
-    document.getElementById("search").addEventListener("input", (event) => {
-      state.query = event.target.value;
-      renderGames();
-    });
-
-    document.querySelectorAll(".tab").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.pick = button.dataset.pick;
-        document.querySelectorAll(".tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
-        renderGames();
-      });
-    });
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
-        try {
-          const registration = await navigator.serviceWorker.register("./sw.js?v=7");
-          await registration.update();
-        } catch (error) {
-          console.warn("Service worker registration failed", error);
-        }
-      });
-    }
-
-    renderTopPicks();
-    renderGames();
-    renderScheduleGames();
-    renderStrongTeams();
-    renderNotes();
-    renderSoccer();
-    renderKbo();
-    renderKLeague();
-    renderResults();
-    loadStandings();
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {});
   </script>
 </body>
 </html>

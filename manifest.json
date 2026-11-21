@@ -1,13 +1,13 @@
 {
-  "name": "스포츠 승률 분석",
-  "short_name": "스포츠 승률",
+  "name": "쓰레드 자동화",
+  "short_name": "쓰",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f6fb",
-  "theme_color": "#10233f",
+  "background_color": "#f5f5f5",
+  "theme_color": "#101010",
   "icons": [
-    { "src": "./image.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "./image (1).png", "sizes": "512x512", "type": "image/png" }
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
