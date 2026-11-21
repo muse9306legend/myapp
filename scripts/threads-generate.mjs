@@ -35,6 +35,14 @@ const recent = queue.posts
 
 const topics = [process.env.TOPIC, ...(config.topics || [])].filter(Boolean);
 
+const kw = config.keywords || { min_per_post: 0, identity: [], search: [] };
+const allKeywords = [...(kw.identity || []), ...(kw.search || [])];
+const keywordCheck = (text) => {
+  const found = allKeywords.filter((k) => text.includes(k));
+  const hasIdentity = !(kw.identity || []).length || (kw.identity || []).some((k) => text.includes(k));
+  return { found, ok: found.length >= (kw.min_per_post || 0) && hasIdentity };
+};
+
 const system = `You write Threads posts in Korean for the account described below.
 Follow the brand guide and the Threads rules exactly. Every post must be at most ${MAX_LEN} characters.
 Write as the account owner; do not invent statistics, news, or personal results that are not in the guide.
@@ -45,7 +53,14 @@ ${brand}
 
 <threads_rules>
 ${rules}
-</threads_rules>`;
+</threads_rules>
+
+<keywords>
+Identity keywords (every post must contain at least one, written exactly as listed): ${(kw.identity || []).join(", ")}
+Search keywords: ${(kw.search || []).join(", ")}
+Every post must contain at least ${kw.min_per_post || 0} keywords in total from these two lists, written exactly as listed,
+with at least one of them in the first two lines. Weave them into natural sentences; never list them.
+</keywords>`;
 
 const user = `${date}에 올릴 Threads 글 ${slots.length}개를 써 주세요.
 글끼리 주제와 형식이 겹치지 않게 해 주세요.
@@ -114,15 +129,20 @@ const { posts } = JSON.parse(json);
 posts.slice(0, slots.length).forEach(({ text }, i) => {
   const clean = text.trim();
   const tooLong = [...clean].length > MAX_LEN;
+  const { found, ok: keywordsOk } = keywordCheck(clean);
   const entry = {
     at: slots[i],
     text: clean,
-    status: tooLong || config.require_approval ? "draft" : "pending",
+    status: tooLong || !keywordsOk || config.require_approval ? "draft" : "pending",
     source: "ai",
+    keywords: found,
   };
-  if (tooLong) entry.error = `${MAX_LEN}자를 넘어서 줄여야 해요`;
+  const problems = [];
+  if (tooLong) problems.push(`${MAX_LEN}자를 넘어서 줄여야 해요`);
+  if (!keywordsOk) problems.push(`키워드가 부족해요 (찾은 것: ${found.join(", ") || "없음"})`);
+  if (problems.length) entry.error = problems.join(" / ");
   queue.posts.push(entry);
-  console.log(`+ [${entry.status}] ${slots[i]} ${clean.slice(0, 30).replace(/\n/g, " ")}…`);
+  console.log(`+ [${entry.status}] ${slots[i]} [${found.join(", ")}] ${clean.slice(0, 30).replace(/\n/g, " ")}…`);
 });
 
 queue.posts.sort((a, b) => Date.parse(a.at) - Date.parse(b.at));

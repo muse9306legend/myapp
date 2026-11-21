@@ -53,6 +53,7 @@
     .badge { padding: 2px 8px; border-radius: 999px; font-weight: 700; border: 1px solid currentColor; }
     .draft { color: var(--muted); } .pending { color: var(--warn); } .published { color: var(--ok); } .failed { color: var(--bad); }
     .text { white-space: pre-wrap; line-height: 1.5; font-size: 14px; }
+    .kw { margin-top: 6px; font-size: 12px; color: var(--muted); }
     .err { color: var(--bad); font-size: 12px; margin-top: 4px; }
     .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
   </style>
@@ -176,6 +177,12 @@
         text.className = "text";
         text.textContent = p.text;
         li.append(meta, text);
+        if (p.keywords?.length) {
+          const kw = document.createElement("div");
+          kw.className = "kw";
+          kw.textContent = p.keywords.map((k) => `#${k}`).join("  ");
+          li.append(kw);
+        }
         if (p.error) {
           const e = document.createElement("div");
           e.className = "err";
