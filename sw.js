@@ -1,5 +1,5 @@
-const CACHE_NAME = "myapp-sports-v7";
-const ASSETS = ["./", "./index.html", "./manifest.json"];
+const CACHE_NAME = "myapp-threads-v1";
+const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -22,8 +22,8 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  if (url.hostname === "statsapi.mlb.com") {
-    event.respondWith(fetch(event.request));
+  if (url.pathname.endsWith("/posts/queue.json")) {
+    event.respondWith(fetch(event.request, { cache: "no-store" }));
     return;
   }
 

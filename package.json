@@ -1,0 +1,15 @@
+{
+  "name": "threads-automation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/threads-generate.mjs",
+    "post": "node scripts/threads-post.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.12.0"
+  }
+}
