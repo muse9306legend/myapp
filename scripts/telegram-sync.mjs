@@ -18,14 +18,23 @@ if (!TOKEN) {
   process.exit(0);
 }
 
-async function tg(method, params) {
+async function tg(method, params, retried = false) {
   const res = await fetch(`${process.env.TELEGRAM_API || "https://api.telegram.org"}/bot${TOKEN}/${method}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(params),
   });
   const data = await res.json().catch(() => ({}));
-  if (!data.ok) throw new Error(`${method}: ${data.description || res.status}`);
+  const wait = data.parameters?.retry_after;
+  if (!data.ok && wait && wait <= 60 && !retried) {
+    console.log(`${method}: rate limited, retrying in ${wait}s`);
+    await new Promise((r) => setTimeout(r, (wait + 1) * 1000));
+    return tg(method, params, true);
+  }
+  if (!data.ok) {
+    if (data.error_code === 409) console.error("Another program is reading this bot's messages. Use a separate bot for this automation.");
+    throw new Error(`${method}: ${data.description || res.status}`);
+  }
   return data.result;
 }
 
