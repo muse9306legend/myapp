@@ -28,6 +28,7 @@ jobs:
           node-version: 22
 
       - name: Telegram – read approvals and edits
+        if: vars.TELEGRAM_ENABLED == 'true'
         continue-on-error: true
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -43,7 +44,7 @@ jobs:
         run: node scripts/threads-post.mjs
 
       - name: Telegram – send new drafts and results
-        if: always()
+        if: always() && vars.TELEGRAM_ENABLED == 'true'
         continue-on-error: true
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
