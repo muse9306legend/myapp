@@ -11,7 +11,9 @@
       ],
       "published_at": "2026-11-21T21:47:03.971Z",
       "threads_id": "18656895349057597",
-      "permalink": "https://www.threads.com/@comingstone.kr/post/DgBOsgkgSbn"
+      "permalink": "https://www.threads.com/@comingstone.kr/post/DgBOsgkgSbn",
+      "tg_published_notified": true,
+      "tg_failed_notified": true
     },
     {
       "at": "2026-11-23T08:30:00+09:00",
@@ -103,7 +105,9 @@
       },
       "published_at": "2026-11-23T13:27:58.543Z",
       "threads_id": "17949702780362785",
-      "permalink": "https://www.threads.com/@comingstone.kr/post/DgFfKFvlnZ0"
+      "permalink": "https://www.threads.com/@comingstone.kr/post/DgFfKFvlnZ0",
+      "tg_published_notified": true,
+      "tg_failed_notified": true
     }
   ]
 }

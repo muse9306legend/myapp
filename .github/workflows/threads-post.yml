@@ -27,19 +27,38 @@ jobs:
         with:
           node-version: 22
 
+      - name: Telegram – read approvals and edits
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          MODE: sync
+        run: node scripts/telegram-sync.mjs
+
       - name: Publish due posts
         env:
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
         run: node scripts/threads-post.mjs
 
+      - name: Telegram – send new drafts and results
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MODE: notify
+        run: node scripts/telegram-sync.mjs
+
       - name: Save queue status
         if: always()
         run: |
-          if ! git diff --quiet posts/queue.json; then
+          if ! git diff --quiet posts/; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Update Threads queue status" posts/queue.json
+            git add posts/queue.json posts/telegram-state.json
+            git commit -m "Update Threads queue status"
             git pull --rebase
             git push
           fi
