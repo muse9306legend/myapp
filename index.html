@@ -176,6 +176,16 @@
         const text = document.createElement("div");
         text.className = "text";
         text.textContent = p.text;
+        if (p.reply_to) {
+          const ctx = document.createElement("div");
+          ctx.className = "kw";
+          ctx.append(`↳ @${p.reply_to.username} 글에 답글: "${(p.reply_to.text || "").slice(0, 60)}…" `);
+          const a = document.createElement("a");
+          a.href = p.reply_to.permalink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "원문";
+          a.style.color = "inherit";
+          ctx.append(a);
+          li.append(ctx);
+        }
         li.append(meta, text);
         if (p.keywords?.length) {
           const kw = document.createElement("div");

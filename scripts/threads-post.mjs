@@ -67,8 +67,21 @@ if (!TOKEN && !DRY_RUN) {
   process.exit(1);
 }
 
+// Daily cap on replies to other people's posts (brand/threads/config.json → replies.max_per_day).
+const config = JSON.parse(await readFile("brand/threads/config.json", "utf8").catch(() => "{}"));
+const maxRepliesPerDay = config.replies?.max_per_day ?? 10;
+const kstDay = (iso) => new Date(Date.parse(iso) + 9 * 3600 * 1000).toISOString().slice(0, 10);
+const today = kstDay(new Date().toISOString());
+let repliesToday = queue.posts.filter(
+  (p) => p.reply_to_id && p.status === "published" && p.published_at && kstDay(p.published_at) === today,
+).length;
+
 let failed = 0;
 for (const post of due) {
+  if (post.reply_to_id && repliesToday >= maxRepliesPerDay) {
+    console.log(`Reply limit (${maxRepliesPerDay}/day) reached; leaving the rest for tomorrow.`);
+    break;
+  }
   const label = `[${post.at}] ${post.text.slice(0, 30).replace(/\n/g, " ")}…`;
   if ([...post.text].length > MAX_LEN) {
     post.status = "failed";
@@ -84,6 +97,7 @@ for (const post of due) {
   try {
     const { id, permalink } = await publish(post);
     Object.assign(post, { status: "published", published_at: new Date().toISOString(), threads_id: id, permalink });
+    if (post.reply_to_id) repliesToday++;
     delete post.error;
     console.log(`✓ ${label} ${permalink || id}`);
   } catch (err) {
