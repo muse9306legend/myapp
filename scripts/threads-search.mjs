@@ -19,10 +19,19 @@ const params = new URLSearchParams({
   fields: "id,text,media_type,permalink,timestamp,username,has_replies",
   access_token: TOKEN,
 });
-const res = await fetch(`https://graph.threads.net/v1.0/keyword_search?${params}`);
-const data = await res.json().catch(() => ({}));
+let res, data;
+for (const host of ["graph.threads.com", "graph.threads.net"]) {
+  res = await fetch(`https://${host}/v1.0/keyword_search?${params}`);
+  data = await res.json().catch(() => ({}));
+  if (res.ok && !data.error) break;
+  const e = data.error || {};
+  console.error(`${host}: ${res.status} ${e.message || JSON.stringify(data)} (type=${e.type}, code=${e.code}, subcode=${e.error_subcode}, trace=${e.fbtrace_id})`);
+}
 if (!res.ok || data.error) {
-  console.error(`Search failed: ${res.status} ${data.error?.message || JSON.stringify(data)}`);
+  const me = await fetch(`https://graph.threads.net/v1.0/me?fields=id,username&access_token=${encodeURIComponent(TOKEN)}`)
+    .then((r) => r.json()).catch(() => ({}));
+  console.error(`Token belongs to: ${me.username ? "@" + me.username : JSON.stringify(me)}`);
+  console.error("Search failed on both hosts.");
   process.exit(1);
 }
 
