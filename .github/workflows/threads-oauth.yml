@@ -1,0 +1,60 @@
+name: Threads token from authorization code
+
+# Exchanges a one-time authorization code (valid 1 hour, single use) for a
+# long-lived Threads token and saves it as the THREADS_ACCESS_TOKEN secret.
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: "승인 후 주소창의 code= 뒤 값 (#_ 는 빼고)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  exchange:
+    runs-on: ubuntu-latest
+    env:
+      APP_ID: "2226448481433038"
+      REDIRECT_URI: "https://twinroozi.com/auth/"
+    steps:
+      - name: Exchange code for a long-lived token and save it
+        env:
+          CODE: ${{ inputs.code }}
+          APP_SECRET: ${{ secrets.THREADS_APP_SECRET }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          CODE="${CODE%%#*}"
+          echo "::add-mask::$CODE"
+          if [ -z "${APP_SECRET:-}" ] || [ -z "${GH_TOKEN:-}" ]; then
+            echo "THREADS_APP_SECRET and GH_PAT secrets are required." >&2; exit 1
+          fi
+
+          SHORT_JSON=$(curl -sS -X POST https://graph.threads.net/oauth/access_token \
+            --form-string "client_id=$APP_ID" --form-string "client_secret=$APP_SECRET" \
+            --form-string "grant_type=authorization_code" --form-string "redirect_uri=$REDIRECT_URI" \
+            --form-string "code=$CODE")
+          SHORT=$(echo "$SHORT_JSON" | jq -r '.access_token // empty')
+          if [ -z "$SHORT" ]; then
+            echo "Code exchange failed: $(echo "$SHORT_JSON" | jq -c 'del(.access_token)')" >&2; exit 1
+          fi
+          echo "::add-mask::$SHORT"
+
+          LONG_JSON=$(curl -sS -G https://graph.threads.net/access_token \
+            --data-urlencode "grant_type=th_exchange_token" \
+            --data-urlencode "client_secret=$APP_SECRET" \
+            --data-urlencode "access_token=$SHORT")
+          LONG=$(echo "$LONG_JSON" | jq -r '.access_token // empty')
+          if [ -z "$LONG" ]; then
+            echo "Long-lived exchange failed: $(echo "$LONG_JSON" | jq -c 'del(.access_token)')" >&2; exit 1
+          fi
+          echo "::add-mask::$LONG"
+          echo "Long-lived token received (expires in $(( $(echo "$LONG_JSON" | jq -r '.expires_in') / 86400 )) days)."
+
+          WHO=$(curl -sS -G https://graph.threads.net/v1.0/me --data-urlencode "fields=username" --data-urlencode "access_token=$LONG" | jq -r '.username // "unknown"')
+          echo "Token belongs to: @$WHO"
+
+          gh secret set THREADS_ACCESS_TOKEN --body "$LONG" --repo "$GITHUB_REPOSITORY"
+          echo "Saved as THREADS_ACCESS_TOKEN."
