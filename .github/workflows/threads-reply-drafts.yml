@@ -9,6 +9,10 @@ on:
       count:
         description: "초안 개수 (최대 10)"
         default: "3"
+      allow_own:
+        description: "내 글에도 이어쓰기 답글 초안 만들기"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -36,6 +40,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           KEYWORD: ${{ inputs.keyword }}
           COUNT: ${{ inputs.count }}
+          ALLOW_OWN: ${{ inputs.allow_own }}
         run: node scripts/threads-reply-drafts.mjs
 
       - name: Save queue

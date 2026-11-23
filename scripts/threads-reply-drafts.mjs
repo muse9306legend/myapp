@@ -11,6 +11,8 @@ const KEYWORD = (process.env.KEYWORD || "").trim();
 const COUNT = Math.min(Number(process.env.COUNT) || 3, 10);
 const QUEUE_FILE = process.env.QUEUE_FILE || "posts/queue.json";
 const MAX_REPLY_LEN = 300;
+const ALLOW_OWN = process.env.ALLOW_OWN === "true";
+const OWN_USERNAME = "comingstone.kr";
 
 if (!TOKEN || !KEYWORD) {
   console.error("THREADS_ACCESS_TOKEN and KEYWORD are required.");
@@ -64,6 +66,9 @@ Each reply must respond to what the other person actually wrote: empathize, add 
 Do not sell, do not include links, prices, or calls to buy, and do not mention our products unless the post is directly about Bible-verse gifts or natural stone.
 Keep each reply under ${MAX_REPLY_LEN} characters, warm and natural, at most one emoji.
 If a post is sensitive (grief, conflict, politics, health) or unrelated to our account, set skip to true instead of replying.
+${ALLOW_OWN
+  ? `Posts by @${OWN_USERNAME} are our own. For those, write a short follow-up reply that continues the thread with one new concrete detail (a behind-the-scenes moment, a material detail, or a question to readers), never self-praise.`
+  : `Posts by @${OWN_USERNAME} are our own; set skip to true for them.`}
 
 <brand_guide>
 ${brand}
