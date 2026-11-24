@@ -14,6 +14,8 @@
 | `brand/BRAND.md` | 계정 주제, 타깃, 말투, 금지어 (AI가 매번 읽는 설명서) |
 | `brand/threads/RULES.md` | Threads 글 규칙, 잘 된 글 예시 |
 | `brand/threads/REPLY_RULES.md` | 사람처럼 쓰는 댓글(답글) 규칙. 답글 초안 스크립트가 읽음 |
+| `skills/threads-human-reply/` | 댓글 쓰기 스킬 (규칙 + 관련 글 조사) |
+| `research/threads-search/` | 키워드 검색 워크플로가 결과를 자동 저장하는 폴더 |
 | `brand/threads/config.json` | 게시 시간(`times`), 승인 필요 여부, 주제 힌트(`topics`) |
 | `scripts/threads-generate.mjs` | Claude로 빈 시간대의 글을 써서 queue에 추가 |
 | `.github/workflows/threads-generate.yml` | 매일 22:17(KST) 다음 날 글 작성. 수동 실행 시 날짜·주제 지정 가능 |
