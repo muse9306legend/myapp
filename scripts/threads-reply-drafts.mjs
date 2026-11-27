@@ -27,8 +27,9 @@ async function get(path, params) {
   return data;
 }
 
-const [brand, queue] = await Promise.all([
+const [brand, replyRules, queue] = await Promise.all([
   readFile("brand/BRAND.md", "utf8"),
+  readFile("brand/threads/REPLY_RULES.md", "utf8"),
   readFile(QUEUE_FILE, "utf8").then(JSON.parse),
 ]);
 const alreadyQueued = new Set(queue.posts.map((p) => p.reply_to_id).filter(Boolean));
@@ -64,7 +65,7 @@ for (const post of candidates) {
 const system = `You write replies in Korean on Threads for the account described below.
 Each reply must respond to what the other person actually wrote: empathize, add something useful, or ask a genuine question.
 Do not sell, do not include links, prices, or calls to buy, and do not mention our products unless the post is directly about Bible-verse gifts or natural stone.
-Keep each reply under ${MAX_REPLY_LEN} characters, warm and natural, at most one emoji.
+Keep each reply under ${MAX_REPLY_LEN} characters. Follow the reply rules below for tone, length, and structure.
 If a post is sensitive (grief, conflict, politics, health) or unrelated to our account, set skip to true instead of replying.
 ${ALLOW_OWN
   ? `Posts by @${OWN_USERNAME} are our own. For those, write a short follow-up reply that continues the thread with one new concrete detail (a behind-the-scenes moment, a material detail, or a question to readers), never self-praise.`
@@ -72,7 +73,11 @@ ${ALLOW_OWN
 
 <brand_guide>
 ${brand}
-</brand_guide>`;
+</brand_guide>
+
+<reply_rules>
+${replyRules}
+</reply_rules>`;
 
 const user = candidates
   .map((p, i) => `<post index="${i}" author="@${p.username}">

@@ -1,6 +1,6 @@
 // Searches public Threads posts by keyword and writes a summary table.
 // Env: THREADS_ACCESS_TOKEN, KEYWORD, SEARCH_TYPE (TOP|RECENT), LIMIT
-import { appendFile } from "node:fs/promises";
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
 
 const TOKEN = process.env.THREADS_ACCESS_TOKEN;
 const KEYWORD = (process.env.KEYWORD || "").trim();
@@ -51,6 +51,16 @@ const lines = [
 ];
 if (!posts.length) {
   lines.push("결과가 없어요. 앱 심사(고급 접근) 전에는 내 계정 글 안에서만 검색됩니다.");
+}
+
+// SAVE_DIR: also save the table as a Markdown file (e.g. research/threads-search)
+if (process.env.SAVE_DIR) {
+  const day = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  const slug = KEYWORD.replace(/[\\/:*?"<>|\s]+/g, "-").slice(0, 40);
+  const file = `${process.env.SAVE_DIR}/${day}-${slug}-${SEARCH_TYPE}.md`;
+  await mkdir(process.env.SAVE_DIR, { recursive: true });
+  await writeFile(file, lines.join("\n") + "\n");
+  console.log(`Saved ${file}`);
 }
 
 if (process.env.GITHUB_STEP_SUMMARY) {
